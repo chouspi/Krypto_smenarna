@@ -1,0 +1,16 @@
+services:
+  oracleServer:
+    image: gvenzl/oracle-free:latest
+    container_name: kryptoSmenarnaOracleDB
+    environment:
+      ORACLE_PASSWORD: "${ORACLE_PASSWORD}"
+      APP_USER: "${APP_USER}"
+      APP_USER_PASSWORD: "${APP_USER_PASSWORD}"
+    ports: 
+      - "1521:1521"
+    volumes:
+      - oracleData:/opt/oracle/oradata
+      - ./db/init:/container-entrypoint-initdb.d
+    restart: on-failure
+volumes:
+  oracleData:
