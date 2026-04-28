@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KryptoSmenarna.Wpf.Models
 {
-    public class users
+    public class User
     {
         public int user_id { get; set; }
         public string email { get; set; }
