@@ -11,4 +11,4 @@ Primární úlohou programu je uživatelský portál kryptoměnové směnárny. 
 
 #Datový model
 
-![](images/datovyModel.png)
+<img src="images/datovyModel.png" alt="Datový model" width="600">
