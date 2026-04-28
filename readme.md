@@ -1,3 +1,13 @@
+# Simulated Crypto Exchange
+
+This project is a desktop application that simulates a simple cryptocurrency exchange.
+
+Users can select an account and manage it through basic operations such as deposits, withdrawals, currency exchanges, and transaction history viewing.
+
+
+
+
+
 V repu není .env, je potřeba ho vytvořit z .env.example
 
 file structure
