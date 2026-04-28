@@ -12,5 +12,10 @@ namespace KryptoSmenarna.Wpf.Models
         public string email { get; set; }
         public string hash_of_password { get; set; }
         public string full_name { get; set; }
+
+        public override string ToString()
+        {
+            return this.full_name;
+        }
     }
 }

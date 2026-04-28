@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using KryptoSmenarna.Wpf.Data;
+using KryptoSmenarna.Wpf.Models;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,8 +18,25 @@ namespace KryptoSmenarna.Wpf;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private User selectedUser;
     public MainWindow()
     {
         InitializeComponent();
+        List<User> AllUsers = new UsersRepository().GetAllUsers();
+        ListBoxUsers.ItemsSource = AllUsers;
+    }
+
+    private void ShowSelectedUserInfo()
+    {
+        Label_VybranyUzivatel.Visibility = Visibility.Visible;
+        Label_VybranyUzivatel.Content = "Vybraný Uživatel: " + selectedUser;
+        Label_userEmail.Visibility = Visibility.Visible;
+        Label_userEmail.Content = "email: " + selectedUser.email;
+    }
+
+    private void ListBoxUsers_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        selectedUser = (User)ListBoxUsers.SelectedItem;
+        ShowSelectedUserInfo();
     }
 }

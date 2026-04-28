@@ -7,7 +7,14 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Label Content="Uživatelé" HorizontalAlignment="Left" Margin="58,56,0,0" VerticalAlignment="Top" FontSize="32"/>
+        <Label Content="Přihlásit se" HorizontalAlignment="Left" Margin="30,30,0,0" VerticalAlignment="Top" FontSize="32"/>
+        <ListBox x:Name="ListBoxUsers" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="34,95,572,52" MouseDoubleClick="ListBoxUsers_MouseDoubleClick"/>
+        <Label x:Name="Label_VybranyUzivatel" Content="Vybraný Uživatel:" HorizontalAlignment="Left" Margin="332,200,0,0" VerticalAlignment="Top" Width="458" FontSize="28" Visibility="Hidden"/>
+        <Label x:Name="Label_userEmail" Content="email:" HorizontalAlignment="Left" Margin="332,250,0,0" VerticalAlignment="Top" FontSize="18" Visibility="Hidden"/>
+        <Button Content="Button" HorizontalAlignment="Left" Margin="332,300
+                ,0,0" VerticalAlignment="Top"/>
+
+
 
     </Grid>
 </Window>

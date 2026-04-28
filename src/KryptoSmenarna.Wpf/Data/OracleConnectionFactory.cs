@@ -27,13 +27,15 @@ public class OracleConnectionFactory
         DirectoryInfo directory = new DirectoryInfo(AppContext.BaseDirectory);
 
 
-        if(directory != null)
-            {
-                string path = Path.Combine(directory.FullName, ".env");
+        while (directory != null)
+        {
+            string path = Path.Combine(directory.FullName, ".env");
 
-                if(Directory.Exists(path))
-                    return path;
-            }
+            if (File.Exists(path))
+                return path;
+
+            directory = directory.Parent;
+        }
         throw new FileNotFoundException("Soubor .env nebyl nalezen.");
     }
 
