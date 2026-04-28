@@ -51,7 +51,7 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20001, 'Uživatel má více peněženek pro stejnou fiat měnu.');
 END;
 /
-
+```
 ### F2 Deposit(p_user_id, p_currency_code, p_amount)
 
 Transakce provede vklad zadané měny na peněženku uživatele.  
@@ -106,3 +106,4 @@ EXCEPTION
         RAISE;
 END;
 /
+```
