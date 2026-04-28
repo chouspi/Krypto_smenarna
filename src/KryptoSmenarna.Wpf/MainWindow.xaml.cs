@@ -28,15 +28,23 @@ public partial class MainWindow : Window
 
     private void ShowSelectedUserInfo()
     {
-        Label_VybranyUzivatel.Visibility = Visibility.Visible;
-        Label_VybranyUzivatel.Content = "Vybraný Uživatel: " + selectedUser;
-        Label_userEmail.Visibility = Visibility.Visible;
-        Label_userEmail.Content = "email: " + selectedUser.email;
+        TextBlock_VybranyUzivatel.Text = "Vybraný Uživatel: " + selectedUser;
+        TextBlock_userEmail.Text = "email: " + selectedUser.email;
+        UserBorder.Visibility = Visibility.Visible;
+    }
+    private void LoginUser()
+    {
+
     }
 
     private void ListBoxUsers_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         selectedUser = (User)ListBoxUsers.SelectedItem;
         ShowSelectedUserInfo();
+    }
+
+    private void Button_Login_Click(object sender, RoutedEventArgs e)
+    {
+        LoginUser();
     }
 }

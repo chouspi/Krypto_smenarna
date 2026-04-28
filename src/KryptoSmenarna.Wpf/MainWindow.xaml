@@ -5,16 +5,70 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KryptoSmenarna.Wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Krypto-Směnárna - Přihlášení" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen"
+        Background="#F3F4F6"
+        FontFamily="Segoe UI">
+
     <Grid>
-        <Label Content="Přihlásit se" HorizontalAlignment="Left" Margin="30,30,0,0" VerticalAlignment="Top" FontSize="32"/>
-        <ListBox x:Name="ListBoxUsers" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="34,95,572,52" MouseDoubleClick="ListBoxUsers_MouseDoubleClick"/>
-        <Label x:Name="Label_VybranyUzivatel" Content="Vybraný Uživatel:" HorizontalAlignment="Left" Margin="332,200,0,0" VerticalAlignment="Top" Width="458" FontSize="28" Visibility="Hidden"/>
-        <Label x:Name="Label_userEmail" Content="email:" HorizontalAlignment="Left" Margin="332,250,0,0" VerticalAlignment="Top" FontSize="18" Visibility="Hidden"/>
-        <Button Content="Button" HorizontalAlignment="Left" Margin="332,300
-                ,0,0" VerticalAlignment="Top"/>
+        <Border Background="White" Width="650" Height="350" CornerRadius="12" Padding="32"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
 
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Opacity="0.05" BlurRadius="15" ShadowDepth="4"/>
+            </Border.Effect>
 
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="1.2*"/>
+                </Grid.ColumnDefinitions>
 
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Přihlásit se" FontSize="28" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,16"/>
+
+                    <TextBlock Text="VYBERTE UŽIVATELE DVOJITÝM KLIKNUTÍM" FontSize="10" FontWeight="Bold" Foreground="#6B7280" Margin="0,0,0,8"/>
+
+                    <ListBox x:Name="ListBoxUsers" 
+                             d:ItemsSource="{d:SampleData ItemCount=5}" 
+                             Height="200" 
+                             BorderBrush="#D1D5DB" 
+                             BorderThickness="1"
+                             Background="#F9FAFB"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             MouseDoubleClick="ListBoxUsers_MouseDoubleClick">
+                    </ListBox>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+
+                    <Border Name="UserBorder" BorderBrush="#4F46E5" BorderThickness="0,4,0,0" Background="#F9FAFB" Padding="20" CornerRadius="8" Visibility="Hidden">
+                        <StackPanel>
+                            <TextBlock x:Name="TextBlock_VybranyUzivatel" Text="Vybraný Uživatel:" FontSize="20" FontWeight="SemiBold" Foreground="#1F2937" TextWrapping="Wrap"/>
+
+                            <TextBlock x:Name="TextBlock_userEmail" Text="email:" FontSize="14" Foreground="#6B7280" Margin="0,8,0,24" />
+
+                            <Button x:Name="Button_Login" Content="Potvrdit přihlášení" Click="Button_Login_Click"
+                                    Background="#4F46E5" Foreground="White" FontWeight="Bold" FontSize="14" Padding="0,12" BorderThickness="0" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#4338CA"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+            </Grid>
+        </Border>
     </Grid>
 </Window>
