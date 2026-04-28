@@ -27,8 +27,16 @@ Procedura vrátí aktuální fiat zůstatek uživatele pro zadanou fiat měnu.
 Ve formuláři se používá hlavně pro zobrazení CZK účtu.  
 Výsledný zůstatek je vrácen pomocí výstupního parametru `p_balance`.
 
-### F2 Deposit(p_user_id, p_currency_code, p_amount)
+### F2 DepositToWallet(p_user_id, p_currency_code, p_amount)
 
 Transakce provede vklad zadané měny na peněženku uživatele.  
 Procedura je společná pro fiat měny i kryptoměny. Navýší zůstatek odpovídající peněženky a zapíše záznam do tabulky `wallet_operations` s typem operace `DEPOSIT`.
+
+### T2 Withdraw(p_user_id, p_currency_code, p_amount)
+
+Transakční procedura provede výběr zadané měny z peněženky uživatele.  
+Je společná pro fiat měny i kryptoměny.
+
+Procedura nejprve ověří, že částka výběru je větší než 0. Poté najde odpovídající peněženku uživatele a zkontroluje, zda má uživatel dostatečný zůstatek. Pokud je zůstatek dostatečný, sníží zůstatek peněženky a zapíše záznam do tabulky `wallet_operations` s typem operace `WITHDRAWAL`.
+
 
