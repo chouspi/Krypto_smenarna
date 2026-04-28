@@ -1,0 +1,18 @@
+INSERT INTO wallets (
+    user_id,
+    currency_code,
+    balance
+)
+SELECT
+    1,
+    'CZK',
+    0
+FROM dual
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM wallets
+    WHERE user_id = 1
+      AND currency_code = 'CZK'
+);
+
+COMMIT;
