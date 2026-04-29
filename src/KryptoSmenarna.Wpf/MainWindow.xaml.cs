@@ -18,11 +18,12 @@ namespace KryptoSmenarna.Wpf;
 /// </summary>
 public partial class MainWindow : Window
 {
+    List<User> AllUsers = new List<User>();
     private User selectedUser;
     public MainWindow()
     {
         InitializeComponent();
-        List<User> AllUsers = new UsersRepository().GetAllUsers();
+        AllUsers = new UsersRepository().GetAllUsers();
         ListBoxUsers.ItemsSource = AllUsers;
     }
 
@@ -46,5 +47,29 @@ public partial class MainWindow : Window
     private void Button_Login_Click(object sender, RoutedEventArgs e)
     {
         LoginUser();
+    }
+
+    private void Button_Click(object sender, RoutedEventArgs e)
+    {
+        new AllDataOperationsRepository().DeleteAllData();
+        AllUsers = new UsersRepository().GetAllUsers();
+
+        ListBoxUsers.ItemsSource = null;
+        ListBoxUsers.ItemsSource = AllUsers;
+
+        selectedUser = null;
+
+        TextBlock_VybranyUzivatel.Text = "";
+        TextBlock_userEmail.Text = "";
+        UserBorder.Visibility = Visibility.Hidden;
+    }
+
+    private void Button_Click_1(object sender, RoutedEventArgs e)
+    {
+        new AllDataOperationsRepository().InsertTestData();
+        AllUsers = new UsersRepository().GetAllUsers();
+
+        ListBoxUsers.ItemsSource = null;
+        ListBoxUsers.ItemsSource = AllUsers;
     }
 }

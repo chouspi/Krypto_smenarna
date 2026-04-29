@@ -1,4 +1,3 @@
-SET DEFINE OFF
 
 DELETE FROM wallet_operations;
 DELETE FROM exchange_rates;

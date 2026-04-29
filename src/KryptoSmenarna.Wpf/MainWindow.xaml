@@ -5,35 +5,68 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KryptoSmenarna.Wpf"
         mc:Ignorable="d"
-        Title="Krypto-Směnárna - Přihlášení" Height="450" Width="800"
+        Title="Krypto-Směnárna - Přihlášení" Height="500" Width="850"
         WindowStartupLocation="CenterScreen"
         Background="#F3F4F6"
         FontFamily="Segoe UI">
 
-    <Grid>
-        <Border Background="White" Width="650" Height="350" CornerRadius="12" Padding="32"
-                HorizontalAlignment="Center" VerticalAlignment="Center">
+    <Window.Resources>
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#6B7280"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#F9FAFB"/>
+                                <Setter Property="Foreground" Value="#374151"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="White" Width="650" Height="350" CornerRadius="12" Padding="32"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
             <Border.Effect>
-                <DropShadowEffect Color="Black" Opacity="0.05" BlurRadius="15" ShadowDepth="4"/>
+                <DropShadowEffect Color="Black" Opacity="0.05" BlurRadius="20" ShadowDepth="5"/>
             </Border.Effect>
 
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="1.2*"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
                     <TextBlock Text="Přihlásit se" FontSize="28" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,16"/>
-
-                    <TextBlock Text="VYBERTE UŽIVATELE DVOJITÝM KLIKNUTÍM" FontSize="10" FontWeight="Bold" Foreground="#6B7280" Margin="0,0,0,8"/>
+                    <TextBlock Text="VYBERTE UŽIVATELE DVOJITÝM KLIKNUTÍM" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="0,0,0,8"/>
 
                     <ListBox x:Name="ListBoxUsers" 
                              d:ItemsSource="{d:SampleData ItemCount=5}" 
                              Height="200" 
-                             BorderBrush="#D1D5DB" 
+                             BorderBrush="#E5E7EB" 
                              BorderThickness="1"
                              Background="#F9FAFB"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -42,23 +75,21 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" VerticalAlignment="Center">
-
-                    <Border Name="UserBorder" BorderBrush="#4F46E5" BorderThickness="0,4,0,0" Background="#F9FAFB" Padding="20" CornerRadius="8" Visibility="Hidden">
+                    <Border Name="UserBorder" BorderBrush="#4F46E5" BorderThickness="0,4,0,0" Background="#F9FAFB" Padding="24" CornerRadius="8" Visibility="Hidden">
                         <StackPanel>
-                            <TextBlock x:Name="TextBlock_VybranyUzivatel" Text="Vybraný Uživatel:" FontSize="20" FontWeight="SemiBold" Foreground="#1F2937" TextWrapping="Wrap"/>
-
-                            <TextBlock x:Name="TextBlock_userEmail" Text="email:" FontSize="14" Foreground="#6B7280" Margin="0,8,0,24" />
+                            <TextBlock x:Name="TextBlock_VybranyUzivatel" Text="Vybraný Uživatel" FontSize="20" FontWeight="Bold" Foreground="#1F2937" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TextBlock_userEmail" Text="email@example.com" FontSize="13" Foreground="#6B7280" Margin="0,4,0,24" />
 
                             <Button x:Name="Button_Login" Content="Potvrdit přihlášení" Click="Button_Login_Click"
-                                    Background="#4F46E5" Foreground="White" FontWeight="Bold" FontSize="14" Padding="0,12" BorderThickness="0" Cursor="Hand">
+                                    Background="#4F46E5" Foreground="White" FontWeight="Bold" FontSize="14" Height="45" Cursor="Hand">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}" CornerRadius="8">
                                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#4338CA"/>
+                                                <Setter TargetName="btnBorder" Property="Background" Value="#4338CA"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -67,8 +98,26 @@
                         </StackPanel>
                     </Border>
                 </StackPanel>
-
             </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Background="#E5E7EB" Padding="15,10" BorderBrush="#D1D5DB" BorderThickness="0,1,0,0">
+            <DockPanel LastChildFill="False">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <Ellipse Width="8" Height="8" Fill="#9CA3AF" Margin="0,0,8,0"/>
+                    <TextBlock Text="Režim vývojáře / Testování" FontWeight="SemiBold" Foreground="#6B7280" FontSize="12" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button Content="Smazat všechna data" 
+                            Style="{StaticResource SecondaryButtonStyle}" 
+                            Click="Button_Click" 
+                            Margin="0,0,8,0"/>
+                    <Button Content="Vložit testovací data" 
+                            Style="{StaticResource SecondaryButtonStyle}" 
+                            Click="Button_Click_1"/>
+                </StackPanel>
+            </DockPanel>
         </Border>
     </Grid>
 </Window>
