@@ -39,4 +39,23 @@ Je společná pro fiat měny i kryptoměny.
 
 Procedura nejprve ověří, že částka výběru je větší než 0. Poté najde odpovídající peněženku uživatele a zkontroluje, zda má uživatel dostatečný zůstatek. Pokud je zůstatek dostatečný, sníží zůstatek peněženky a zapíše záznam do tabulky `wallet_operations` s typem operace `WITHDRAWAL`.
 
+### F3 FindTradingPair(p_base_currency_code, p_quote_currency_code, p_pair_id, p_is_reversed, p_message)
+
+Procedura vyhledá obchodní pár v tabulce `trading_pairs` podle zadaných kódů měn.  
+Na vstupu přijímá kód základní měny a kód kotační měny. Pořadí zadaných měn není důležité, protože procedura kontroluje obě možné kombinace.
+
+Procedura se používá před provedením směny kryptoměny za fiat měnu nebo fiat měny za kryptoměnu. Jejím cílem je zjistit, zda pro zadanou dvojici měn existuje podporovaný obchodní pár, a vrátit jeho `pair_id`.
+
+Vstupní parametry:
+
+- `p_base_currency_code` – kód první měny, například `BTC`
+- `p_quote_currency_code` – kód druhé měny, například `USD`
+
+Výstupní parametry:
+
+- `p_pair_id` – ID nalezeného obchodního páru
+- `p_is_reversed` – určuje, zda byl pár nalezen v opačném pořadí
+  - `0` znamená, že pořadí odpovídá záznamu v tabulce `trading_pairs`
+  - `1` znamená, že uživatel zadal měny v opačném pořadí
+- `p_message` – textová zpráva s výsledkem operace
 
