@@ -6,8 +6,114 @@
         xmlns:local="clr-namespace:KryptoSmenarna.Wpf"
         mc:Ignorable="d"
         Title="UserWindow" Height="450" Width="800">
-    <Grid>
-        <Label Content=""/>
+    <Window.Resources>
+        <Style TargetType="ComboBox">
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton Name="ToggleButton" 
+                                          BorderBrush="{TemplateBinding BorderBrush}" 
+                                          Background="{TemplateBinding Background}" 
+                                          Grid.Column="2" IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                          Focusable="false" ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="Border" CornerRadius="6" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                                            <Path x:Name="Arrow" Fill="#4A4A4A" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" Data="M 0 0 L 4 4 L 8 0 Z"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="#F0F0F0"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter Name="ContentSite" IsHitTestVisible="False"  Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="12,3,23,3" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                            <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True"  Focusable="False" PopupAnimation="Slide">
+                                <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder" Background="White" CornerRadius="6" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.1"/>
+                                        </Border.Effect>
+                                        <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
+        <Style TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Border Background="White" CornerRadius="12" Padding="20" VerticalAlignment="Top" HorizontalAlignment="Left" MaxWidth="320">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" ShadowDepth="2" Opacity="0.08"/>
+            </Border.Effect>
+
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <TextBlock Text="💳" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Moje peněženky" FontSize="18" FontWeight="Bold" Foreground="#2D3436"/>
+                </StackPanel>
+
+                <Border BorderBrush="#4A90E2" BorderThickness="4,0,0,0" Background="#F3F7FF" Padding="15" Margin="0,0,0,20" CornerRadius="2">
+                    <StackPanel>
+                        <TextBlock Text="FIAT ÚČTY" FontSize="10" FontWeight="ExtraBold" Foreground="#4A90E2" Margin="0,0,0,8"/>
+
+                        <ComboBox SelectedIndex="0" Height="38" Margin="0,0,0,10" x:Name="ComboboxFiat" DisplayMemberPath="currencyCode" SelectionChanged="ComboboxFiat_SelectionChanged"/>
+
+
+                        <TextBlock FontSize="26" FontWeight="Bold" Foreground="#2D3436" x:Name="TextBlockFiatBalance"/>
+
+                        <UniformGrid Columns="2" Margin="0,15,0,0">
+                            <Button Content="Vklad" Height="35" Background="White" BorderBrush="#4A90E2" Foreground="#4A90E2" Cursor="Hand"/>
+                            <Button Content="Výběr" Height="35" Background="White" BorderBrush="#D1D1D1" Foreground="#888888" Margin="10,0,0,0" Cursor="Hand"/>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border BorderBrush="#F39C12" BorderThickness="4,0,0,0" Background="#FDF7F0" Padding="15" CornerRadius="2">
+                    <StackPanel>
+                        <TextBlock Text="VYBRAT KRYPTO AKTIVUM" FontSize="10" FontWeight="ExtraBold" Foreground="#D68910" Margin="0,0,0,8"/>
+
+                        <ComboBox SelectedIndex="0" Height="38" Margin="0,0,0,10" x:Name="ComboBoxCrypto" DisplayMemberPath="currencyCode" SelectionChanged="ComboBoxCrypto_SelectionChanged">
+
+                        </ComboBox>
+
+                        <TextBlock Text="Aktuální zůstatek:" FontSize="11" Foreground="#7F8C8D" />
+                        <TextBlock Text="0.00000" FontSize="22" FontWeight="Bold" Foreground="#2D3436" Margin="0,2" x:Name="TextBlockCryptoBalance"/>
+                        <TextBlock Text="≈ 18 067 CZK" FontSize="13" Foreground="#7F8C8D" Margin="0,0,0,15"/>
+
+                        <UniformGrid Columns="2">
+                            <Button Content="Vklad" Height="35" Background="#F39C12" BorderThickness="0" Foreground="White" FontWeight="SemiBold" Cursor="Hand"/>
+                            <Button Content="Výběr" Height="35" Background="White" BorderBrush="#D1D1D1" Foreground="#888888" Margin="10,0,0,0" Cursor="Hand"/>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>
