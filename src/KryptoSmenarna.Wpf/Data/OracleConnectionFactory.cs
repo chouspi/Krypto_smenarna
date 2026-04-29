@@ -7,14 +7,13 @@ namespace KryptoSmenarna.Wpf.Data;
 public class OracleConnectionFactory
 {
     private string connectionString;
-    
 
     public OracleConnectionFactory()
     {
         Dictionary<string, string> envValues = LoadEnvFile();
         string userName = envValues["APP_USER"];
         string password = envValues["APP_USER_PASSWORD"];
-        connectionString = "User Id="+userName+";Password="+password+";Data Source=localhost:1521/FREEPDB1;";
+        connectionString = "User Id=" + userName + ";Password=" + password + ";Data Source=localhost:1521/FREEPDB1;";
     }
 
     public OracleConnection CreateConnection()
@@ -22,10 +21,10 @@ public class OracleConnectionFactory
         return new OracleConnection(connectionString);
     }
 
-    private string FindEnvFile() //najde a vrátí cestu k souboru .env
+    // Hledá .env od výstupní složky aplikace směrem ke kořeni projektu.
+    private string FindEnvFile()
     {
         DirectoryInfo directory = new DirectoryInfo(AppContext.BaseDirectory);
-
 
         while (directory != null)
         {
@@ -39,17 +38,18 @@ public class OracleConnectionFactory
         throw new FileNotFoundException("Soubor .env nebyl nalezen.");
     }
 
-    private Dictionary<string,string> LoadEnvFile() //vrati dictionary promennych z .env key=nazev lokalni promene value=hodnota dane promenne
+    // Načte neprázdné řádky .env ve formátu KEY=VALUE do slovníku.
+    private Dictionary<string, string> LoadEnvFile()
     {
         Dictionary<string, string> result = new Dictionary<string, string>();
 
         using StreamReader sr = new StreamReader(FindEnvFile());
-        while(!sr.EndOfStream)
+        while (!sr.EndOfStream)
         {
             string line = sr.ReadLine().Trim();
             if (String.IsNullOrWhiteSpace(line))
                 continue;
-            else if(line.StartsWith("#"))
+            else if (line.StartsWith("#"))
                 continue;
 
             string[] parts = line.Split("=");
@@ -57,7 +57,7 @@ public class OracleConnectionFactory
             {
                 continue;
             }
-            
+
             string key = parts[0].Trim();
             string value = parts[1].Trim();
 

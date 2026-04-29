@@ -10,7 +10,7 @@ namespace KryptoSmenarna.Wpf.Models
     {
         public int wallet_id { get; set; }
         public int user_id { get; set; }
-        public string currencyCode {  get; set; }
+        public string currencyCode { get; set; }
         public decimal balance { get; set; }
     }
 }

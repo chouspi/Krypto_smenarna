@@ -6,7 +6,7 @@ services:
       ORACLE_PASSWORD: "${ORACLE_PASSWORD}"
       APP_USER: "${APP_USER}"
       APP_USER_PASSWORD: "${APP_USER_PASSWORD}"
-    ports: 
+    ports:
       - "1521:1521"
     volumes:
       - oracleData:/opt/oracle/oradata

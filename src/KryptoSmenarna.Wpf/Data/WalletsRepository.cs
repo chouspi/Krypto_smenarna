@@ -7,6 +7,7 @@ using Oracle.ManagedDataAccess.Client;
 using System.Data;
 using System.Windows.Media.Animation;
 using KryptoSmenarna.Wpf.Models;
+
 namespace KryptoSmenarna.Wpf.Data
 {
     public class WalletsRepository
@@ -53,22 +54,23 @@ namespace KryptoSmenarna.Wpf.Data
 
             return result;
         }
-        public bool TryWithdraw(decimal amount, string currencyCode, int userId) //pokusi se vybrat částku z dené peněženky, pokud uspěje, vrátí true
+
+        // Databázová procedura řeší validaci výběru; OracleException znamená neúspěch.
+        public bool TryWithdraw(decimal amount, string currencyCode, int userId)
         {
             try
             {
                 OracleConnection connection = new OracleConnectionFactory().CreateConnection();
                 connection.Open();
 
-                OracleCommand command = new OracleCommand("WithdrawFromWallet",connection);
+                OracleCommand command = new OracleCommand("WithdrawFromWallet", connection);
                 command.CommandType = CommandType.StoredProcedure;
                 command.BindByName = true;
 
-                command.Parameters.Add("p_user_id",OracleDbType.Int32).Value = userId;
+                command.Parameters.Add("p_user_id", OracleDbType.Int32).Value = userId;
                 command.Parameters.Add("p_currency_code", OracleDbType.Varchar2).Value = currencyCode;
-                command.Parameters.Add("p_amount",OracleDbType.Decimal).Value = amount;
+                command.Parameters.Add("p_amount", OracleDbType.Decimal).Value = amount;
                 command.ExecuteNonQuery();
-
 
                 return true;
             }
@@ -77,6 +79,7 @@ namespace KryptoSmenarna.Wpf.Data
                 return false;
             }
         }
+
         public void Deposit(decimal amount, string currencyCode, int userId)
         {
             OracleConnection connection = new OracleConnectionFactory().CreateConnection();
@@ -86,7 +89,7 @@ namespace KryptoSmenarna.Wpf.Data
             command.CommandType = CommandType.StoredProcedure;
             command.BindByName = true;
 
-            command.Parameters.Add("p_user_id",OracleDbType.Int32).Value = userId;
+            command.Parameters.Add("p_user_id", OracleDbType.Int32).Value = userId;
             command.Parameters.Add("p_currency_code", OracleDbType.Varchar2).Value = currencyCode;
             command.Parameters.Add("p_amount", OracleDbType.Decimal).Value = amount;
 
@@ -111,11 +114,10 @@ namespace KryptoSmenarna.Wpf.Data
 
             command.ExecuteNonQuery();
 
-            if(walletBalance.Value == DBNull.Value)
+            if (walletBalance.Value == DBNull.Value)
                 return 0;
 
             return Convert.ToDecimal(walletBalance.Value.ToString());
         }
-        
     }
 }

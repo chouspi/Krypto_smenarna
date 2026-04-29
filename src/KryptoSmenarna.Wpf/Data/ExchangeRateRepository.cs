@@ -15,8 +15,6 @@ namespace KryptoSmenarna.Wpf.Data
     public class ExchangeRateRepository
     {
         public ExchangeRate? GetLatestExchangeRate(int pairId)
-
-            //only ai generated part exept the frontend, have to eather check it later, or if it works it works
         {
             using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
             connection.Open();
@@ -56,6 +54,7 @@ namespace KryptoSmenarna.Wpf.Data
             using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
             connection.Open();
 
+            // Uzavření starého kurzu a vložení nového musí proběhnout v jedné transakci.
             using OracleTransaction transaction = connection.BeginTransaction();
 
             try
@@ -63,6 +62,7 @@ namespace KryptoSmenarna.Wpf.Data
                 int pairId;
                 decimal oldRate;
 
+                // FOR UPDATE zamkne původní kurz, ze kterého se počítá navazující hodnota.
                 using (OracleCommand selectCommand = new OracleCommand(@"
             SELECT pair_id, rate
             FROM exchange_rates
@@ -83,6 +83,7 @@ namespace KryptoSmenarna.Wpf.Data
                     oldRate = Convert.ToDecimal(reader["rate"]);
                 }
 
+                // Kurz se simuluje malou náhodnou změnou a nový interval platí dvě minuty.
                 decimal randomChange = GetRandomDecimal(-0.05m, 0.05m);
                 decimal newRate = Math.Round(oldRate * (1 + randomChange), 8);
 
@@ -106,6 +107,7 @@ namespace KryptoSmenarna.Wpf.Data
 
                 int newRateId;
 
+                // RateId se nastavuje ručně, protože nový kurz se vkládá s explicitním ID.
                 using (OracleCommand idCommand = new OracleCommand(@"
             SELECT NVL(MAX(rate_id), 0) + 1
             FROM exchange_rates
@@ -181,6 +183,7 @@ namespace KryptoSmenarna.Wpf.Data
             return min + (randomDecimal * (max - min));
         }
 
+        // Oracle output parametry mohou přijít jako Oracle typy nebo textová hodnota "null".
         private static bool IsNull(object value)
         {
             return value == null || value == DBNull.Value || value.ToString() == "null";

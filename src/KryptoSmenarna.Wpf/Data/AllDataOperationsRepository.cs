@@ -13,6 +13,7 @@ namespace KryptoSmenarna.Wpf.Data
     {
         public void DeleteAllData()
         {
+            // Aplikace běží z bin složky, proto se cesta skládá zpět ke kořeni repozitáře.
             string path = Path.GetFullPath(Path.Combine(
                 AppContext.BaseDirectory,
                 "..", "..", "..", "..", "..",
@@ -21,12 +22,12 @@ namespace KryptoSmenarna.Wpf.Data
                 "deleteAllData.sql"
             ));
 
-
             string script = File.ReadAllText(path);
 
             using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
             connection.Open();
 
+            // Testovací skripty se spouští po jednotlivých příkazech oddělených středníkem.
             string[] commands = script.Split(
                 ';',
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
@@ -40,10 +41,11 @@ namespace KryptoSmenarna.Wpf.Data
                 using OracleCommand command = new OracleCommand(sql, connection);
                 command.ExecuteNonQuery();
             }
-
         }
+
         public void InsertTestData()
         {
+            // Aplikace běží z bin složky, proto se cesta skládá zpět ke kořeni repozitáře.
             string path = Path.GetFullPath(Path.Combine(
                 AppContext.BaseDirectory,
                 "..", "..", "..", "..", "..",
@@ -52,12 +54,12 @@ namespace KryptoSmenarna.Wpf.Data
                 "insertRestValues.sql"
             ));
 
-
             string script = File.ReadAllText(path);
 
             using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
             connection.Open();
 
+            // Testovací skripty se spouští po jednotlivých příkazech oddělených středníkem.
             string[] commands = script.Split(
                 ';',
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
@@ -71,7 +73,6 @@ namespace KryptoSmenarna.Wpf.Data
                 using OracleCommand command = new OracleCommand(sql, connection);
                 command.ExecuteNonQuery();
             }
-
         }
     }
 }

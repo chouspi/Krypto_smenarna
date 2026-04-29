@@ -35,7 +35,7 @@ public partial class MainWindow : Window
     }
     private void LoginUser()
     {
-        new UserWindow(selectedUser).Show(); 
+        new UserWindow(selectedUser).Show();
     }
 
     private void ListBoxUsers_MouseDoubleClick(object sender, MouseButtonEventArgs e)

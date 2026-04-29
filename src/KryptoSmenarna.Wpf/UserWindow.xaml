@@ -17,10 +17,10 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
                         <Grid>
-                            <ToggleButton Name="ToggleButton" 
-                                          BorderBrush="{TemplateBinding BorderBrush}" 
-                                          Background="{TemplateBinding Background}" 
-                                          Grid.Column="2" IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                            <ToggleButton Name="ToggleButton"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          Background="{TemplateBinding Background}"
+                                          Grid.Column="2" IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                           Focusable="false" ClickMode="Press">
                                 <ToggleButton.Template>
                                     <ControlTemplate TargetType="ToggleButton">
@@ -35,8 +35,8 @@
                                     </ControlTemplate>
                                 </ToggleButton.Template>
                             </ToggleButton>
-                            <ContentPresenter Name="ContentSite" IsHitTestVisible="False"  Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="12,3,23,3" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                            <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True"  Focusable="False" PopupAnimation="Slide">
+                            <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="12,3,23,3" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                            <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
                                 <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                     <Border x:Name="DropDownBorder" Background="White" CornerRadius="6" BorderThickness="1" BorderBrush="#E0E0E0">
                                         <Border.Effect>
@@ -85,7 +85,6 @@
 
                         <ComboBox SelectedIndex="0" Height="38" Margin="0,0,0,10" x:Name="ComboboxFiat" DisplayMemberPath="currencyCode" SelectionChanged="ComboboxFiat_SelectionChanged"/>
 
-
                         <TextBlock FontSize="26" FontWeight="Bold" Foreground="#2D3436" x:Name="TextBlockFiatBalance"/>
 
                         <UniformGrid Columns="2" Margin="0,15,0,0">
@@ -100,7 +99,6 @@
                         <TextBlock Text="VYBRAT KRYPTO AKTIVUM" FontSize="10" FontWeight="ExtraBold" Foreground="#D68910" Margin="0,0,0,8"/>
 
                         <ComboBox SelectedIndex="0" Height="38" Margin="0,0,0,10" x:Name="ComboBoxCrypto" DisplayMemberPath="currencyCode" SelectionChanged="ComboBoxCrypto_SelectionChanged">
-
                         </ComboBox>
 
                         <TextBlock Text="Aktuální zůstatek:" FontSize="11" Foreground="#7F8C8D" />

@@ -16,7 +16,6 @@ namespace KryptoSmenarna.Wpf.Data
             OracleConnection connection = new OracleConnectionFactory().CreateConnection();
             connection.Open();
 
-
             string querry = @"
                     SELECT *
                     FROM users
@@ -24,9 +23,8 @@ namespace KryptoSmenarna.Wpf.Data
 
             using OracleCommand command = new OracleCommand(querry, connection);
             using OracleDataReader reader = command.ExecuteReader();
-            
 
-            while(reader.Read())
+            while (reader.Read())
             {
                 int id = reader.GetInt32(reader.GetOrdinal("USER_ID"));
                 string useremail = reader.GetString(reader.GetOrdinal("EMAIL"));

@@ -14,6 +14,7 @@ BEGIN
     p_valid_to := NULL;
     p_is_valid := 0;
 
+    -- Vrací poslední známý kurz; p_is_valid říká, jestli je ještě aktuální.
     SELECT
         rate_id,
         rate,

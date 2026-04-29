@@ -41,7 +41,7 @@ namespace KryptoSmenarna.Wpf
         }
         private void UpdateFiatBalanceInUI(Wallet wallet)
         {
-            if(choosenFiatWallet.balance != null)
+            if (choosenFiatWallet.balance != null)
                 TextBlockFiatBalance.Text = choosenFiatWallet.balance.ToString() + " " + choosenFiatWallet.currencyCode;
             else
                 TextBlockFiatBalance.Text = "0.00 " + choosenFiatWallet.currencyCode;
@@ -99,6 +99,7 @@ namespace KryptoSmenarna.Wpf
                 return;
             }
 
+            // Neplatný kurz se hned nahradí novým simulovaným kurzem.
             if (!rate.IsValid)
             {
                 rate = er.MakeNewValid(rate.RateId);
@@ -106,6 +107,7 @@ namespace KryptoSmenarna.Wpf
 
             decimal fiatValue;
 
+            // Pokud byl pár nalezen opačně, používá se převrácený kurz.
             if (!isReversed)
             {
                 fiatValue = cryptoAmount * rate.Rate;

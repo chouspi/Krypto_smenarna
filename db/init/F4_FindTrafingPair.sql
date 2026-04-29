@@ -11,7 +11,8 @@ BEGIN
     p_is_reversed := NULL;
     p_message := NULL;
 
-    SELECT 
+    -- Pár se hledá v obou směrech, aby šel stejný kurz použít i inverzně.
+    SELECT
         pair_id,
         CASE
             WHEN base_currency_code = UPPER(p_base_currency_code)
