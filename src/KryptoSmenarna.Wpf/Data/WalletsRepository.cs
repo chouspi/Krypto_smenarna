@@ -10,7 +10,7 @@ namespace KryptoSmenarna.Wpf.Data
 {
     public class WalletsRepository
     {
-        public bool Withdraw(decimal amount, string currencyCode, int userId)
+        public bool TryWithdraw(decimal amount, string currencyCode, int userId) //pokusi se vybrat částku z dené peněženky, pokud uspěje, vrátí true
         {
             try
             {
@@ -23,7 +23,7 @@ namespace KryptoSmenarna.Wpf.Data
 
                 command.Parameters.Add("p_user_id",OracleDbType.Int32).Value = userId;
                 command.Parameters.Add("p_currency_code", OracleDbType.Varchar2).Value = currencyCode;
-                //finish
+                command.Parameters.Add("p_amount",OracleDbType.Decimal).Value = amount;
                 command.ExecuteNonQuery();
 
 
