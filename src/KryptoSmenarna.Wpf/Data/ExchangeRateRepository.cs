@@ -1,0 +1,196 @@
+﻿using KryptoSmenarna.Wpf.Models;
+using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Types;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace KryptoSmenarna.Wpf.Data
+{
+    public class ExchangeRateRepository
+    {
+        public ExchangeRate? GetLatestExchangeRate(int pairId)
+
+            //only ai generated part exept the frontend, have to eather check it later, or if it works it works
+        {
+            using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
+            connection.Open();
+
+            using OracleCommand command = new OracleCommand("GetLatestExchangeRate", connection);
+            command.CommandType = CommandType.StoredProcedure;
+            command.BindByName = true;
+
+            command.Parameters.Add("p_pair_id", OracleDbType.Int32).Value = pairId;
+
+            command.Parameters.Add("p_rate_id", OracleDbType.Int32).Direction = ParameterDirection.Output;
+            command.Parameters.Add("p_rate", OracleDbType.Decimal).Direction = ParameterDirection.Output;
+            command.Parameters.Add("p_valid_from", OracleDbType.TimeStamp).Direction = ParameterDirection.Output;
+            command.Parameters.Add("p_valid_to", OracleDbType.TimeStamp).Direction = ParameterDirection.Output;
+            command.Parameters.Add("p_is_valid", OracleDbType.Int32).Direction = ParameterDirection.Output;
+
+            command.ExecuteNonQuery();
+
+            object rateIdValue = command.Parameters["p_rate_id"].Value;
+
+            if (IsNull(rateIdValue))
+                return null;
+
+            return new ExchangeRate
+            {
+                RateId = ToInt(rateIdValue),
+                PairId = pairId,
+                Rate = ToDecimal(command.Parameters["p_rate"].Value),
+                ValidFrom = ToDateTime(command.Parameters["p_valid_from"].Value),
+                ValidTo = ToDateTime(command.Parameters["p_valid_to"].Value),
+                IsValid = ToInt(command.Parameters["p_is_valid"].Value) == 1
+            };
+        }
+
+        public ExchangeRate MakeNewValid(int exchangeRateId)
+        {
+            using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
+            connection.Open();
+
+            using OracleTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                int pairId;
+                decimal oldRate;
+
+                using (OracleCommand selectCommand = new OracleCommand(@"
+                SELECT pair_id, rate
+                FROM exchange_rates
+                WHERE rate_id = :rate_id
+                FOR UPDATE
+            ", connection))
+                {
+                    selectCommand.Transaction = transaction;
+                    selectCommand.BindByName = true;
+                    selectCommand.Parameters.Add("rate_id", OracleDbType.Int32).Value = exchangeRateId;
+
+                    using OracleDataReader reader = selectCommand.ExecuteReader();
+
+                    if (!reader.Read())
+                        throw new InvalidOperationException("Exchange rate nebyl nalezen.");
+
+                    pairId = reader.GetInt32(reader.GetOrdinal("pair_id"));
+                    oldRate = reader.GetDecimal(reader.GetOrdinal("rate"));
+                }
+
+                decimal randomChange = GetRandomDecimal(-0.05m, 0.05m);
+                decimal newRate = Math.Round(oldRate * (1 + randomChange), 8);
+
+                // Ukončí aktuálně platný kurz pro stejný trading pair.
+                // Jinak by mohlo existovat více platných kurzů zároveň.
+                using (OracleCommand updateCommand = new OracleCommand(@"
+                UPDATE exchange_rates
+                SET valid_to = SYSTIMESTAMP
+                WHERE pair_id = :pair_id
+                  AND valid_from <= SYSTIMESTAMP
+                  AND (valid_to IS NULL OR valid_to > SYSTIMESTAMP)
+            ", connection))
+                {
+                    updateCommand.Transaction = transaction;
+                    updateCommand.BindByName = true;
+                    updateCommand.Parameters.Add("pair_id", OracleDbType.Int32).Value = pairId;
+                    updateCommand.ExecuteNonQuery();
+                }
+
+                int newRateId;
+
+                using (OracleCommand insertCommand = new OracleCommand(@"
+                INSERT INTO exchange_rates (
+                    pair_id,
+                    rate,
+                    valid_from,
+                    valid_to
+                )
+                VALUES (
+                    :pair_id,
+                    :rate,
+                    SYSTIMESTAMP,
+                    SYSTIMESTAMP + INTERVAL '2' MINUTE
+                )
+                RETURNING rate_id INTO :new_rate_id
+            ", connection))
+                {
+                    insertCommand.Transaction = transaction;
+                    insertCommand.BindByName = true;
+
+                    insertCommand.Parameters.Add("pair_id", OracleDbType.Int32).Value = pairId;
+                    insertCommand.Parameters.Add("rate", OracleDbType.Decimal).Value = newRate;
+
+                    OracleParameter newRateIdParam = new OracleParameter("new_rate_id", OracleDbType.Int32)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+
+                    insertCommand.Parameters.Add(newRateIdParam);
+
+                    insertCommand.ExecuteNonQuery();
+
+                    newRateId = ToInt(newRateIdParam.Value);
+                }
+
+                transaction.Commit();
+
+                return new ExchangeRate
+                {
+                    RateId = newRateId,
+                    PairId = pairId,
+                    Rate = newRate,
+                    ValidFrom = DateTime.Now,
+                    ValidTo = DateTime.Now.AddMinutes(2),
+                    IsValid = true
+                };
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        private static decimal GetRandomDecimal(decimal min, decimal max)
+        {
+            double randomDouble = Random.Shared.NextDouble();
+            decimal randomDecimal = (decimal)randomDouble;
+
+            return min + (randomDecimal * (max - min));
+        }
+
+        private static bool IsNull(object value)
+        {
+            return value == null || value == DBNull.Value || value.ToString() == "null";
+        }
+
+        private static int ToInt(object value)
+        {
+            return Convert.ToInt32(value.ToString(), CultureInfo.InvariantCulture);
+        }
+
+        private static decimal ToDecimal(object value)
+        {
+            return Convert.ToDecimal(value.ToString(), CultureInfo.InvariantCulture);
+        }
+
+        private static DateTime? ToDateTime(object value)
+        {
+            if (IsNull(value))
+                return null;
+
+            if (value is OracleTimeStamp oracleTimeStamp)
+                return oracleTimeStamp.Value;
+
+            if (value is DateTime dateTime)
+                return dateTime;
+
+            return Convert.ToDateTime(value.ToString(), CultureInfo.InvariantCulture);
+        }
+    }
+}
