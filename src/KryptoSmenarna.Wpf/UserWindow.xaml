@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KryptoSmenarna.Wpf"
         mc:Ignorable="d"
-        Title="UserWindow" Height="450" Width="800">
+        Title="UserWindow" Height="504" Width="817">
     <Window.Resources>
         <Style TargetType="ComboBox">
             <Setter Property="Padding" Value="10,5"/>
@@ -105,7 +105,7 @@
 
                         <TextBlock Text="Aktuální zůstatek:" FontSize="11" Foreground="#7F8C8D" />
                         <TextBlock Text="0.00000" FontSize="22" FontWeight="Bold" Foreground="#2D3436" Margin="0,2" x:Name="TextBlockCryptoBalance"/>
-                        <TextBlock Text="≈ 18 067 CZK" FontSize="13" Foreground="#7F8C8D" Margin="0,0,0,15"/>
+                        <TextBlock Text="≈ " FontSize="13" Foreground="#7F8C8D" Margin="0,0,0,15" x:Name="TextBlockCryptoInFiat"/>
 
                         <UniformGrid Columns="2">
                             <Button Content="Vklad" Height="35" Background="#F39C12" BorderThickness="0" Foreground="White" FontWeight="SemiBold" Cursor="Hand"/>

@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace KryptoSmenarna.Wpf.Data
 {
@@ -63,11 +64,11 @@ namespace KryptoSmenarna.Wpf.Data
                 decimal oldRate;
 
                 using (OracleCommand selectCommand = new OracleCommand(@"
-                SELECT pair_id, rate
-                FROM exchange_rates
-                WHERE rate_id = :rate_id
-                FOR UPDATE
-            ", connection))
+            SELECT pair_id, rate
+            FROM exchange_rates
+            WHERE rate_id = :rate_id
+            FOR UPDATE
+        ", connection))
                 {
                     selectCommand.Transaction = transaction;
                     selectCommand.BindByName = true;
@@ -78,63 +79,69 @@ namespace KryptoSmenarna.Wpf.Data
                     if (!reader.Read())
                         throw new InvalidOperationException("Exchange rate nebyl nalezen.");
 
-                    pairId = reader.GetInt32(reader.GetOrdinal("pair_id"));
-                    oldRate = reader.GetDecimal(reader.GetOrdinal("rate"));
+                    pairId = Convert.ToInt32(reader["pair_id"]);
+                    oldRate = Convert.ToDecimal(reader["rate"]);
                 }
 
                 decimal randomChange = GetRandomDecimal(-0.05m, 0.05m);
                 decimal newRate = Math.Round(oldRate * (1 + randomChange), 8);
 
-                // Ukončí aktuálně platný kurz pro stejný trading pair.
-                // Jinak by mohlo existovat více platných kurzů zároveň.
+                DateTime now = DateTime.Now;
+                DateTime validTo = now.AddMinutes(2);
+
                 using (OracleCommand updateCommand = new OracleCommand(@"
-                UPDATE exchange_rates
-                SET valid_to = SYSTIMESTAMP
-                WHERE pair_id = :pair_id
-                  AND valid_from <= SYSTIMESTAMP
-                  AND (valid_to IS NULL OR valid_to > SYSTIMESTAMP)
-            ", connection))
+            UPDATE exchange_rates
+            SET valid_to = :now_time
+            WHERE pair_id = :pair_id
+              AND valid_from <= :now_time
+              AND (valid_to IS NULL OR valid_to > :now_time)
+        ", connection))
                 {
                     updateCommand.Transaction = transaction;
                     updateCommand.BindByName = true;
+                    updateCommand.Parameters.Add("now_time", OracleDbType.TimeStamp).Value = now;
                     updateCommand.Parameters.Add("pair_id", OracleDbType.Int32).Value = pairId;
                     updateCommand.ExecuteNonQuery();
                 }
 
                 int newRateId;
 
+                using (OracleCommand idCommand = new OracleCommand(@"
+            SELECT NVL(MAX(rate_id), 0) + 1
+            FROM exchange_rates
+        ", connection))
+                {
+                    idCommand.Transaction = transaction;
+                    newRateId = Convert.ToInt32(idCommand.ExecuteScalar());
+                }
+
                 using (OracleCommand insertCommand = new OracleCommand(@"
-                INSERT INTO exchange_rates (
-                    pair_id,
-                    rate,
-                    valid_from,
-                    valid_to
-                )
-                VALUES (
-                    :pair_id,
-                    :rate,
-                    SYSTIMESTAMP,
-                    SYSTIMESTAMP + INTERVAL '2' MINUTE
-                )
-                RETURNING rate_id INTO :new_rate_id
-            ", connection))
+            INSERT INTO exchange_rates (
+                rate_id,
+                pair_id,
+                rate,
+                valid_from,
+                valid_to
+            )
+            VALUES (
+                :rate_id,
+                :pair_id,
+                :rate,
+                :valid_from,
+                :valid_to
+            )
+        ", connection))
                 {
                     insertCommand.Transaction = transaction;
                     insertCommand.BindByName = true;
 
+                    insertCommand.Parameters.Add("rate_id", OracleDbType.Int32).Value = newRateId;
                     insertCommand.Parameters.Add("pair_id", OracleDbType.Int32).Value = pairId;
                     insertCommand.Parameters.Add("rate", OracleDbType.Decimal).Value = newRate;
-
-                    OracleParameter newRateIdParam = new OracleParameter("new_rate_id", OracleDbType.Int32)
-                    {
-                        Direction = ParameterDirection.Output
-                    };
-
-                    insertCommand.Parameters.Add(newRateIdParam);
+                    insertCommand.Parameters.Add("valid_from", OracleDbType.TimeStamp).Value = now;
+                    insertCommand.Parameters.Add("valid_to", OracleDbType.TimeStamp).Value = validTo;
 
                     insertCommand.ExecuteNonQuery();
-
-                    newRateId = ToInt(newRateIdParam.Value);
                 }
 
                 transaction.Commit();
@@ -144,10 +151,20 @@ namespace KryptoSmenarna.Wpf.Data
                     RateId = newRateId,
                     PairId = pairId,
                     Rate = newRate,
-                    ValidFrom = DateTime.Now,
-                    ValidTo = DateTime.Now.AddMinutes(2),
+                    ValidFrom = now,
+                    ValidTo = validTo,
                     IsValid = true
                 };
+            }
+            catch (OracleException ex)
+            {
+                transaction.Rollback();
+
+                MessageBox.Show(
+                    $"Oracle chyba:\nNumber: {ex.Number}\nMessage: {ex.Message}"
+                );
+
+                throw;
             }
             catch
             {
@@ -171,12 +188,21 @@ namespace KryptoSmenarna.Wpf.Data
 
         private static int ToInt(object value)
         {
-            return Convert.ToInt32(value.ToString(), CultureInfo.InvariantCulture);
+            if (value is OracleDecimal oracleDecimal)
+                return oracleDecimal.ToInt32();
+
+            return Convert.ToInt32(value);
         }
 
         private static decimal ToDecimal(object value)
         {
-            return Convert.ToDecimal(value.ToString(), CultureInfo.InvariantCulture);
+            if (value == null || value == DBNull.Value)
+                return 0;
+
+            if (value is Oracle.ManagedDataAccess.Types.OracleDecimal oracleDecimal)
+                return oracleDecimal.Value;
+
+            return Convert.ToDecimal(value);
         }
 
         private static DateTime? ToDateTime(object value)

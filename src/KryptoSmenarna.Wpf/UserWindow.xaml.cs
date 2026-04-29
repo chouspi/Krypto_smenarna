@@ -2,6 +2,7 @@
 using KryptoSmenarna.Wpf.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,6 +51,7 @@ namespace KryptoSmenarna.Wpf
         {
             choosenFiatWallet = userFiatWallets[ComboboxFiat.SelectedIndex];
             UpdateFiatBalanceInUI(choosenFiatWallet);
+            CalculateFiatValueFromCryptoValueInUI();
         }
         private void UpdateCryptoBalanceInUI(Wallet wallet)
         {
@@ -63,6 +65,58 @@ namespace KryptoSmenarna.Wpf
         {
             choosenCryptoWallet = userCryptoWallets[ComboBoxCrypto.SelectedIndex];
             UpdateCryptoBalanceInUI(choosenCryptoWallet);
+            CalculateFiatValueFromCryptoValueInUI();
+        }
+        private void CalculateFiatValueFromCryptoValueInUI()
+        {
+            if (choosenCryptoWallet == null || choosenFiatWallet == null)
+                return;
+
+            decimal cryptoAmount = choosenCryptoWallet.balance;
+
+            TradingPairsRepository tp = new TradingPairsRepository();
+            ExchangeRateRepository er = new ExchangeRateRepository();
+
+            bool isReversed;
+
+            int? tradingPairId = tp.FindTradingPairId(
+                choosenCryptoWallet.currencyCode,
+                choosenFiatWallet.currencyCode,
+                out isReversed
+            );
+
+            if (tradingPairId == null)
+            {
+                TextBlockCryptoInFiat.Text = "≈ kurz nenalezen";
+                return;
+            }
+
+            ExchangeRate? rate = er.GetLatestExchangeRate(tradingPairId.Value);
+
+            if (rate == null)
+            {
+                TextBlockCryptoInFiat.Text = "≈ kurz neexistuje";
+                return;
+            }
+
+            if (!rate.IsValid)
+            {
+                rate = er.MakeNewValid(rate.RateId);
+            }
+
+            decimal fiatValue;
+
+            if (!isReversed)
+            {
+                fiatValue = cryptoAmount * rate.Rate;
+            }
+            else
+            {
+                fiatValue = cryptoAmount / rate.Rate;
+            }
+
+            TextBlockCryptoInFiat.Text =
+                "≈ " + fiatValue.ToString("N2") + " " + choosenFiatWallet.currencyCode;
         }
     }
 }

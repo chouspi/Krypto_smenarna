@@ -119,34 +119,43 @@ SELECT 1 FROM dual;
 
 ------------------------------------------------------------
 -- EXCHANGE RATES
--- jeden kurz pro každý trading pair
+-- aktuální přibližné testovací kurzy
 -- valid_from = teď
 -- valid_to   = teď + 2 minuty
 ------------------------------------------------------------
 
 INSERT INTO exchange_rates (rate_id, pair_id, rate, valid_from, valid_to)
-VALUES (1, 1, 95000.00000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+VALUES (1, 1, 76309.00000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+-- BTC/USD
 
 INSERT INTO exchange_rates (rate_id, pair_id, rate, valid_from, valid_to)
-VALUES (2, 2, 3300.00000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+VALUES (2, 2, 2288.48000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+-- ETH/USD
 
 INSERT INTO exchange_rates (rate_id, pair_id, rate, valid_from, valid_to)
-VALUES (3, 3, 180.00000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+VALUES (3, 3, 83.28000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+-- SOL/USD
 
 INSERT INTO exchange_rates (rate_id, pair_id, rate, valid_from, valid_to)
-VALUES (4, 4, 0.75000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+VALUES (4, 4, 0.24533500, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+-- ADA/USD
 
 INSERT INTO exchange_rates (rate_id, pair_id, rate, valid_from, valid_to)
-VALUES (5, 5, 88000.00000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+VALUES (5, 5, 65215.79352192, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+-- BTC/EUR
 
 INSERT INTO exchange_rates (rate_id, pair_id, rate, valid_from, valid_to)
-VALUES (6, 6, 3050.00000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+VALUES (6, 6, 1955.79864969, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+-- ETH/EUR
 
 INSERT INTO exchange_rates (rate_id, pair_id, rate, valid_from, valid_to)
-VALUES (7, 7, 167.00000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+VALUES (7, 7, 71.17340398, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+-- SOL/EUR
 
 INSERT INTO exchange_rates (rate_id, pair_id, rate, valid_from, valid_to)
-VALUES (8, 8, 0.69000000, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+VALUES (8, 8, 0.20967011, SYSTIMESTAMP, SYSTIMESTAMP + INTERVAL '2' MINUTE);
+-- ADA/EUR
+
 
 ------------------------------------------------------------
 -- wallet_operations a exchange_transactions záměrně prázdné
