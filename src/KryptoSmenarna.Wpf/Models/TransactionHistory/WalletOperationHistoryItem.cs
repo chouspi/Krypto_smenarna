@@ -1,4 +1,5 @@
 using System;
+using KryptoSmenarna.Wpf.Models;
 
 namespace KryptoSmenarna.Wpf.Models.TransactionHistory;
 
@@ -15,7 +16,7 @@ public class WalletOperationHistoryItem : ITransactionHistoryItem
     public DateTime EventTime => OperationTime;
     public string SourceType => OperationType;
     public string Status => "DONE";
-    public string MainText => $"{GetReadableOperationType()} {Amount:N8} {CurrencyCode}";
+    public string MainText => GetReadableOperationType() + " " + CurrencyAmountFormatter.Format(Amount, CurrencyCode) + " " + CurrencyCode;
     public string DetailText => TransactionId == null
         ? "Wallet operation"
         : $"Wallet operation linked to transaction #{TransactionId}";

@@ -1,4 +1,5 @@
 using System;
+using KryptoSmenarna.Wpf.Models;
 
 namespace KryptoSmenarna.Wpf.Models.TransactionHistory;
 
@@ -18,6 +19,7 @@ public class ExchangeTransactionHistoryItem : ITransactionHistoryItem
     public DateTime EventTime => TransactionTime;
     public string SourceType => "EXCHANGE";
     public string Status => TransactionStatus;
-    public string MainText => $"{FromAmount:N8} {FromCurrencyCode} -> {ToAmount:N8} {ToCurrencyCode}";
+    public string MainText => CurrencyAmountFormatter.Format(FromAmount, FromCurrencyCode) + " " + FromCurrencyCode
+        + " -> " + CurrencyAmountFormatter.Format(ToAmount, ToCurrencyCode) + " " + ToCurrencyCode;
     public string DetailText => $"Kurz: {ExchangeRate:N8}";
 }

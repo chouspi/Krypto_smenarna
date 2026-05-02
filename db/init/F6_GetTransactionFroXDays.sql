@@ -6,35 +6,31 @@ RETURN SYS_REFCURSOR
 IS
     v_result SYS_REFCURSOR;
 BEGIN
-    IF p_days <= 0 THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Počet dní musí být větší než 0.');
-    END IF;
-
     OPEN v_result FOR
         SELECT
             'EXCHANGE' AS source_type,
-            t.transaction_time AS event_time,
-            t.status AS status,
-            t.from_currency_code AS from_currency_code,
-            t.to_currency_code AS to_currency_code,
-            t.from_amount AS from_amount,
-            t.to_amount AS to_amount,
-            t.exchange_rate AS exchange_rate
-        FROM exchange_transactions t
-        WHERE t.user_id = p_user_id
-          AND t.transaction_time >= CAST(SYSTIMESTAMP AS TIMESTAMP) - NUMTODSINTERVAL(p_days, 'DAY')
+            transaction_time AS event_time,
+            status,
+            from_currency_code,
+            to_currency_code,
+            from_amount,
+            to_amount,
+            exchange_rate
+        FROM exchange_transactions
+        WHERE user_id = p_user_id
+          AND transaction_time >= CAST(SYSTIMESTAMP AS TIMESTAMP) - NUMTODSINTERVAL(p_days, 'DAY')
 
         UNION ALL
 
         SELECT
-            o.operation_type AS source_type,
-            o.operation_time AS event_time,
-            'DONE' AS status,
-            w.currency_code AS from_currency_code,
-            NULL AS to_currency_code,
-            o.amount AS from_amount,
-            NULL AS to_amount,
-            NULL AS exchange_rate
+            o.operation_type,
+            o.operation_time,
+            'DONE',
+            w.currency_code,
+            CAST(NULL AS VARCHAR2(10)),
+            o.amount,
+            CAST(NULL AS NUMBER),
+            CAST(NULL AS NUMBER)
         FROM wallet_operations o
         JOIN wallets w ON w.wallet_id = o.wallet_id
         WHERE w.user_id = p_user_id

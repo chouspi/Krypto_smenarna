@@ -21,6 +21,8 @@ namespace KryptoSmenarna.Wpf.UserSubWindows
         private List<Wallet> userFiatWallets = new List<Wallet>();
         private List<Wallet> userCryptoWallets = new List<Wallet>();
 
+        public event EventHandler? WalletOperationCompleted;
+
         public WalletOperationsSubWindow()
         {
             InitializeComponent();
@@ -62,6 +64,14 @@ namespace KryptoSmenarna.Wpf.UserSubWindows
 
             UpdateFiatBalanceInUI(choosenFiatWallet);
             UpdateCryptoBalanceInUI(choosenCryptoWallet);
+        }
+
+        public void Refresh()
+        {
+            if (currentUser == null)
+                return;
+
+            Initialize(currentUser);
         }
 
         private void UpdateFiatBalanceInUI(Wallet? wallet)
@@ -108,7 +118,7 @@ namespace KryptoSmenarna.Wpf.UserSubWindows
 
         private void CalculateFiatValueFromCryptoValueInUI()
         {
-            if (choosenCryptoWallet == null || choosenFiatWallet == null)
+            if (currentUser == null || choosenCryptoWallet == null || choosenFiatWallet == null)
             {
                 TextBlockCryptoInFiat.Text = "";
                 return;
@@ -116,44 +126,32 @@ namespace KryptoSmenarna.Wpf.UserSubWindows
 
             decimal cryptoAmount = choosenCryptoWallet.balance;
 
-            TradingPairsRepository tp = new TradingPairsRepository();
-            ExchangeRateRepository er = new ExchangeRateRepository();
+            if (cryptoAmount <= 0)
+            {
+                TextBlockCryptoInFiat.Text = "≈ 0.00 " + choosenFiatWallet.currencyCode;
+                return;
+            }
 
-            int? tradingPairId = tp.FindTradingPairId(
-                choosenCryptoWallet.currencyCode,
-                choosenFiatWallet.currencyCode,
-                out bool isReversed
-            );
+            ExchangeRepository exchangeRepository = new ExchangeRepository();
+            ExchangeQuote quote;
 
-            if (tradingPairId == null)
+            try
+            {
+                quote = exchangeRepository.GetExchangeQuote(
+                    currentUser.user_id,
+                    choosenCryptoWallet.currencyCode,
+                    choosenFiatWallet.currencyCode,
+                    cryptoAmount
+                );
+            }
+            catch (OracleException)
             {
                 TextBlockCryptoInFiat.Text = "≈ kurz nenalezen";
                 return;
             }
 
-            ExchangeRate? rate = er.GetLatestExchangeRate(tradingPairId.Value);
-
-            if (rate == null)
-            {
-                TextBlockCryptoInFiat.Text = "≈ kurz neexistuje";
-                return;
-            }
-
-            if (!rate.IsValid)
-                rate = er.MakeNewValid(rate.RateId);
-
-            if (rate.Rate <= 0)
-            {
-                TextBlockCryptoInFiat.Text = "≈ neplatný kurz";
-                return;
-            }
-
-            decimal fiatValue = !isReversed
-                ? cryptoAmount * rate.Rate
-                : cryptoAmount / rate.Rate;
-
             TextBlockCryptoInFiat.Text =
-                "≈ " + fiatValue.ToString("N2") + " " + choosenFiatWallet.currencyCode;
+                "≈ " + quote.ToAmount.ToString("N2") + " " + choosenFiatWallet.currencyCode;
         }
 
         private void ButtonFiatDeposit_Click(object sender, RoutedEventArgs e)
@@ -198,6 +196,7 @@ namespace KryptoSmenarna.Wpf.UserSubWindows
                 return;
 
             TextBoxFiatOperation.Text = "";
+            OnWalletOperationCompleted();
         }
 
         private void ButtonFiatWithdraw_Click(object sender, RoutedEventArgs e)
@@ -229,6 +228,7 @@ namespace KryptoSmenarna.Wpf.UserSubWindows
                 return;
 
             TextBoxFiatOperation.Text = "";
+            OnWalletOperationCompleted();
         }
 
         private void ButtonCryptoDeposit_Click(object sender, RoutedEventArgs e)
@@ -273,6 +273,7 @@ namespace KryptoSmenarna.Wpf.UserSubWindows
                 return;
 
             TextBoxCryptoOperation.Text = "";
+            OnWalletOperationCompleted();
         }
 
         private void ButtonCryptoWithdraw_Click(object sender, RoutedEventArgs e)
@@ -304,6 +305,7 @@ namespace KryptoSmenarna.Wpf.UserSubWindows
                 return;
 
             TextBoxCryptoOperation.Text = "";
+            OnWalletOperationCompleted();
         }
 
         private bool TryReadWalletAmount(TextBox textBox, out decimal amount)
@@ -382,6 +384,14 @@ namespace KryptoSmenarna.Wpf.UserSubWindows
 
             if (index >= 0)
                 wallets[index] = updatedWallet;
+        }
+
+        private void OnWalletOperationCompleted()
+        {
+            EventHandler? handler = WalletOperationCompleted;
+
+            if (handler != null)
+                handler(this, EventArgs.Empty);
         }
     }
 }

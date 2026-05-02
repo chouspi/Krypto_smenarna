@@ -1,187 +1,254 @@
-# Projekt kryptoměnové směnárny
+# Krypto směnárna
 
-## Databázové systémy II
-
-**Akademický rok:** 2025/2026  
 **Autor:** Samuel Kratoš
+**Login:** KRA0745
+**Předmět:** Databázové systémy 2
+**GitHub:** https://github.com/chouspi/Krypto_smenarna/tree/main
 
-# Specifikace programu
+## Specifikace programu
 
-Primární úlohou programu je uživatelský portál kryptoměnové směnárny. Program umožňuje vybrat uživatele, zobrazit jeho fiat a kryptoměnové peněženky, provádět vklady a výběry fiat měn i kryptoměn a zobrazit orientační hodnotu vybrané kryptoměny ve vybrané fiat měně podle aktuálního kurzu z databáze.
+Primární úlohou tohoto programu je simulovat jednoduchou směnárnu kryptoměn.
 
-Hlavní uživatelské okno je rozděleno na tři samostatné části:
+Program umožňuje pracovat s uživatelskými účty, peněženkami a podporovanými měnami. Uživatel si může zobrazit své peněženky, provádět vklady a výběry a směňovat prostředky mezi fiat měnami a kryptoměnami.
 
-- peněženky, vklady a výběry
-- transakční historie
-- směna fiat měny za kryptoměnu podle kurzu
+Při směně si uživatel zvolí zdrojovou a cílovou měnu, zadá částku a program podle aktuálního kurzu vypočítá výslednou hodnotu směny.
 
-Aktuálně je plně implementována část peněženek. Část transakční historie a část směny jsou v uživatelském rozhraní připravené jako samostatné formuláře, ale jejich kompletní workflow bude doplněno následně.
+Důležitou funkcí programu je také zobrazení historie transakcí, kde jsou evidovány provedené směny a peněženkové operace uživatele.
 
-Program pracuje s databází Oracle. Vklady a výběry nejsou prováděny přímou změnou zůstatku v aplikaci, ale přes databázové procedury. Databáze tím zajišťuje konzistentní úpravu zůstatku a zároveň zapisuje historii operací.
+## Model
 
-# Datový model
+![Datový model](images/datovyModel.png)
 
-<img src="images/datovyModel.png" alt="Datový model" width="600">
+## Formulář
 
-Základní tabulky datového modelu:
+![Formulář aplikace](images/formulare.png)
 
-- `users` ukládá uživatele aplikace.
-- `currencies` ukládá podporované fiat a kryptoměny.
-- `wallets` ukládá peněženky uživatelů a jejich zůstatky.
-- `wallet_operations` ukládá vklady a výběry z peněženek.
-- `trading_pairs` ukládá podporované směnné páry.
-- `exchange_rates` ukládá směnné kurzy a jejich časovou platnost.
-- `exchange_transactions` ukládá provedené směny mezi měnami.
+## Seznam funkcí
 
-# Architektura aplikace
+### CRUD F1 GetFiatBalance(p_user_id, p_fiat_code, p_balance)
 
-Aplikace je vytvořena jako desktopová WPF aplikace v .NET 9. Přístup do databáze je oddělen do repository tříd ve složce `Data`. Uživatelské rozhraní pro hlavní okno je rozdělené do složky `UserSubWindows`.
+Procedura vrátí zůstatek fiat peněženky daného uživatele.
 
-Hlavní části UI:
+**Vstupy**
+  
+`p_user_id` – ID uživatele  
+`p_fiat_cod` – ID měny  
+  
+**Výstupy**
+    
+ÚSPĚCH - vrátí uživatelův zústatek  
+Pokud uživatel danou fiat peněženku nemá, procedura vrátí hodnotu 0.
 
-- `UserWindow` slouží jako dashboard a pouze skládá jednotlivé části obrazovky.
-- `WalletOperationsSubWindow` obsahuje formulář pro fiat a crypto vklady a výběry.
-- `TransactionHistorySubWindow` je připravená část pro historii transakcí.
-- `ExchangeSubWindow` je připravená část pro směnu fiat měny za kryptoměnu.
+---
 
-Rozložení hlavního okna odpovídá pracovní ploše, kde jsou peněženky vlevo přes celou výšku a pravá část je rozdělena na transakční historii nahoře a směnu dole.
+### T F2 DepositToWallet(p_user_id, p_currency_code, p_amount)
 
-# Validace vstupů
+Transakce vloží prostředky do peněženky uživatele.
 
-Formulář pro peněženky ověřuje vstupy ještě před voláním databáze:
+Podle zadaného kódu měny navýší zůstatek odpovídající peněženky a vloží záznam o provedeném vkladu do tabulky `wallet_operations`.
 
-- částka musí být platné desetinné číslo,
-- částka musí být větší než 0,
-- částka může mít maximálně 8 desetinných míst,
-- částka nesmí překročit rozsah databázového typu `NUMBER(18,8)`,
-- při výběru musí mít peněženka dostatečný zůstatek,
-- po vkladu nesmí zůstatek překročit maximální povolenou hodnotu.
+**Vstupy**
 
-Po úspěšném vkladu nebo výběru aplikace znovu načte konkrétní peněženku z databáze a aktualizuje hodnoty v UI.
+`p_user_id` – ID uživatele  
+`p_currency_code` – kód měny  
+`p_amount` – vkládaná částka  
 
-# Seznam databázových funkcí a procedur
+**Chybové hlášky**
 
-## F1 GetFiatBalance(p_user_id, p_fiat_code, p_balance)
+`-20001` – Částka musí být větší než 0.  
 
-Procedura vrátí aktuální fiat zůstatek uživatele pro zadanou fiat měnu. Výsledný zůstatek je vrácen pomocí výstupního parametru `p_balance`. Pokud peněženka není nalezena, vrací se hodnota `0`.
+---
 
-## F2 DepositToWallet(p_user_id, p_currency_code, p_amount)
+### T F3 WithdrawFromWallet(p_user_id, p_currency_code, p_amount)
 
-Transakční procedura provede vklad zadané měny na peněženku uživatele. Procedura je společná pro fiat měny i kryptoměny.
+Transakce provede výběr prostředků z peněženky uživatele.
 
-Postup procedury:
+Nejdříve ověří, že zadaná částka je větší než 0. Poté vyhledá odpovídající peněženku, zkontroluje dostatečný zůstatek, sníží zůstatek peněženky a vloží záznam o výběru do tabulky `wallet_operations`.
 
-- ověří, že částka vkladu je větší než 0,
-- najde peněženku uživatele pro zadanou měnu,
-- uzamkne řádek peněženky pomocí `FOR UPDATE`,
-- navýší zůstatek peněženky,
-- vloží záznam do `wallet_operations`,
-- provede `COMMIT`.
+**Vstupy**
 
-Typ operace se zapisuje podle typu měny:
+`p_user_id` – ID uživatele  
+`p_currency_code` – kód měny  
+`p_amount` – vybíraná částka  
 
-- `FIAT_DEPOSIT` pro fiat měnu,
-- `CRYPTO_DEPOSIT` pro kryptoměnu.
+**Chybové hlášky**
 
-Při chybě se provede `ROLLBACK`.
+`-20002` – Částka musí být větší než 0.  
+`-20003` – Nedostatečný zůstatek.    
 
-## F3 WithdrawFromWallet(p_user_id, p_currency_code, p_amount)
+---
 
-Transakční procedura provede výběr zadané měny z peněženky uživatele. Je společná pro fiat měny i kryptoměny.
+### CRUD F4 FindTradingPair(p_base_currency_code, p_quote_currency_code, p_pair_id, p_is_reversed, p_message)
 
-Postup procedury:
+Procedura vyhledá obchodní pár podle zadaných měn.
 
-- ověří, že částka výběru je větší než 0,
-- najde peněženku uživatele pro zadanou měnu,
-- uzamkne řádek peněženky pomocí `FOR UPDATE`,
-- zkontroluje dostatečný zůstatek,
-- sníží zůstatek peněženky,
-- vloží záznam do `wallet_operations`,
-- provede `COMMIT`.
+Funkce umožňuje vyhledat pár i v opačném pořadí měn. Pokud je pár nalezen v opačném směru, nastaví výstupní parametr `p_is_reversed` na hodnotu 1. Pokud je pár nalezen ve stejném směru, nastaví hodnotu 0.
 
-Typ operace se zapisuje podle typu měny:
+**Vstupy**
 
-- `FIAT_WITHDRAWAL` pro fiat měnu,
-- `CRYPTO_WITHDRAWAL` pro kryptoměnu.
+`p_base_currency_code` – kód první měny  
+`p_quote_currency_code` – kód druhé měny  
 
-Při nedostatečném zůstatku nebo jiné chybě se provede `ROLLBACK`.
+**Výstupy**
 
-## F4 FindTradingPair(p_base_currency_code, p_quote_currency_code, p_pair_id, p_is_reversed, p_message)
+`p_pair_id` – ID nalezeného obchodního páru  
+`p_is_reversed` – informace, zda byl pár nalezen v opačném směru  
 
-Procedura vyhledá obchodní pár v tabulce `trading_pairs` podle zadaných kódů měn. Pořadí zadaných měn není důležité, protože procedura kontroluje obě možné kombinace.
+Pokud obchodní pár neexistuje, výstupní hodnoty se nastaví na `NULL`.
 
-Výstupní parametry:
+---
 
-- `p_pair_id` je ID nalezeného obchodního páru,
-- `p_is_reversed` určuje, zda byl pár nalezen v opačném pořadí,
-- `p_message` obsahuje textovou zprávu s výsledkem.
+### CRUD F5 GetLatestExchangeRate(p_pair_id, p_rate_id, p_rate, p_valid_from, p_valid_to, p_is_valid)
 
-Pokud je pár nalezen v opačném pořadí, aplikace při přepočtu používá převrácený kurz.
+Procedura vrátí poslední dostupný kurz pro zadaný obchodní pár.
 
-## GetLatestExchangeRate(p_pair_id, p_rate_id, p_rate, p_valid_from, p_valid_to, p_is_valid)
+Podle parametru `p_pair_id` vyhledá nejnovější kurz z tabulky `exchange_rates`. Zároveň určí, zda je tento kurz v aktuálním čase stále platný.
 
-Procedura vrátí poslední známý kurz pro zadaný obchodní pár. Zároveň vrací informaci, zda je kurz aktuálně platný.
+**Vstupy**
 
-Výstupní parametry:
+`p_pair_id` – ID obchodního páru  
 
-- `p_rate_id` je ID kurzu,
-- `p_rate` je hodnota kurzu,
-- `p_valid_from` je začátek platnosti,
-- `p_valid_to` je konec platnosti,
-- `p_is_valid` určuje, zda kurz platí v aktuálním čase.
+**Výstupy**
 
-Pokud aplikace dostane neplatný kurz, vytvoří nový simulovaný kurz v repository vrstvě metodou `MakeNewValid`.
+`p_rate_id` – ID nalezeného kurzu  
+`p_rate` – hodnota kurzu  
+`p_valid_from` – začátek platnosti kurzu  
+`p_valid_to` – konec platnosti kurzu  
+`p_is_valid` – informace, zda je kurz aktuálně platný  
 
-## F6 GetTransactionsForDays(p_user_id, p_days)
+Pokud kurz neexistuje, výstupní hodnoty se nastaví na `NULL` a `p_is_valid` na hodnotu 0.
 
-Funkce vrací `SYS_REFCURSOR` s transakcemi a peněženkovými operacemi za zadaný počet dní. Výsledek sjednocuje:
+---
 
-- záznamy z `exchange_transactions`,
-- záznamy z `wallet_operations`, které nejsou navázané na směnnou transakci.
+### CRUD F6 GetTransactionsForXDays(p_user_id, p_days)
 
-Výsledek je řazen sestupně podle času události. Funkce ověřuje, že počet dní je větší než 0.
+Funkce vrátí historii transakcí uživatele za posledních `p_days` dní.
 
-# Repository vrstvy
+Výsledkem je společný přehled směn z tabulky `exchange_transactions` a samostatných peněženkových operací z tabulky `wallet_operations`. Záznamy jsou seřazeny od nejnovějších po nejstarší.
 
-## WalletsRepository
+**Vstupy**
 
-Třída zajišťuje práci s peněženkami. Obsahuje metody pro načtení seznamu peněženek, načtení konkrétní peněženky, vklad a výběr.
+`p_user_id` – ID uživatele  
+`p_days` – počet dní zpětně  
 
-Důležité metody:
+**Výstupy**
 
-- `GetAllWallets(userId, isCrypto)` načte fiat nebo crypto peněženky uživatele,
-- `GetWallet(userId, currencyCode)` načte konkrétní peněženku,
-- `Deposit(amount, currencyCode, userId)` volá proceduru `DepositToWallet`,
-- `TryWithdraw(amount, currencyCode, userId)` volá proceduru `WithdrawFromWallet`.
+Funkce vrací kurzor se seznamem transakcí a operací. Výsledek obsahuje typ záznamu, čas operace, stav, měny, částky a případně použitý směnný kurz.
 
-U částek se při volání Oracle nastavuje `Precision = 18` a `Scale = 8`, aby odpovídaly databázovému typu `NUMBER(18,8)`.
+---
 
-## TradingPairsRepository
+### CRUD F7 GetWalletOperationsForDays(p_user_id, p_days)
 
-Třída volá proceduru `FindTradingPair` a převádí výsledek do C# hodnot. Aplikace díky tomu ví, zda lze vybranou kryptoměnu přepočítat do vybrané fiat měny a zda má použít přímý nebo převrácený kurz.
+Funkce vrátí peněženkové operace uživatele za posledních `p_days` dní.
 
-## ExchangeRateRepository
+Používá se pro zobrazení historie vkladů, výběrů a operací spojených se směnou. Výsledek obsahuje informace o peněžence, měně, typu operace, částce a čase provedení.
 
-Třída získává poslední kurz pomocí procedury `GetLatestExchangeRate`. Pokud kurz již není platný, metoda `MakeNewValid` vytvoří nový simulovaný kurz s malou náhodnou změnou a novou časovou platností.
+**Vstupy**
 
-## ExchangeTransactionsRepository
+`p_user_id` – ID uživatele  
+`p_days` – počet dní zpětně  
 
-Třída obsahuje metody pro práci se směnnými transakcemi. Aktuálně umí načíst transakce za zadaný počet dní a vložit novou směnnou transakci. Uživatelská část směny zatím není dokončena.
+**Výstupy**
 
-# Aktuální stav implementace
+Funkce vrací kurzor se seznamem peněženkových operací seřazených od nejnovějších po nejstarší.
 
-Implementováno:
+---
 
-- výběr uživatele při spuštění aplikace,
-- zobrazení fiat a crypto peněženek,
-- přepočet hodnoty vybrané kryptoměny do vybrané fiat měny,
-- fiat a crypto vklady přes databázovou proceduru,
-- fiat a crypto výběry přes databázovou proceduru,
-- automatické obnovení neplatného simulovaného kurzu,
-- rozdělení hlavního okna na tři samostatné části.
+### T F8 EnsureValidExchangeRate(p_pair_id, p_rate_id, p_rate, p_valid_from, p_valid_to)
 
-Připraveno pro další doplnění:
+Procedura zajistí, že pro zadaný obchodní pár existuje aktuálně platný kurz.
 
-- zobrazení transakční historie v UI,
-- formulář pro směnu fiat měny za kryptoměnu,
-- plné propojení směny s tabulkou `exchange_transactions`.
+Nejdříve se pokusí najít platný kurz v tabulce `exchange_rates`. Pokud platný kurz neexistuje, vezme poslední dostupný kurz, ukončí jeho platnost a vytvoří nový kurz s krátkou časovou platností.
+
+**Vstupy**
+
+`p_pair_id` – ID obchodního páru  
+
+**Výstupy**
+
+`p_rate_id` – ID platného nebo nově vytvořeného kurzu  
+`p_rate` – hodnota kurzu  
+`p_valid_from` – začátek platnosti kurzu  
+`p_valid_to` – konec platnosti kurzu  
+
+---
+
+### T F9 GetExchangeQuote(p_user_id, p_from_currency_code, p_to_currency_code, p_from_amount, p_pair_id, p_rate_id, p_exchange_rate, p_is_reversed, p_to_amount, p_message)
+
+Procedura vypočítá nabídku směny pro uživatele.
+
+Nejdříve ověří zadanou částku, existenci peněženek a to, že směna probíhá mezi fiat měnou a kryptoměnou. Poté zkontroluje dostatečný zůstatek, najde obchodní pár, zajistí platný kurz a vypočítá výslednou částku.
+
+**Vstupy**
+
+`p_user_id` – ID uživatele  
+`p_from_currency_code` – kód zdrojové měny  
+`p_to_currency_code` – kód cílové měny  
+`p_from_amount` – částka ke směně  
+
+**Výstupy**
+
+`p_pair_id` – ID obchodního páru  
+`p_rate_id` – ID použitého kurzu  
+`p_exchange_rate` – použitý směnný kurz  
+`p_is_reversed` – informace, zda je kurz použit opačně  
+`p_to_amount` – výsledná částka po směně  
+`p_message` – stavová zpráva  
+
+**Chybové hlášky**
+
+`-20004` – Částka musí být větší než 0.  
+`-20005` – Směna musí být mezi fiat měnou a kryptoměnou.  
+`-20006` – Nedostatečný zůstatek.  
+`-20007` – Trading pair neexistuje.  
+`-20008` – Výsledná částka je mimo povolený rozsah.  
+
+---
+
+---
+
+### T F10 ExecuteExchange(p_user_id, p_from_currency_code, p_to_currency_code, p_from_amount, p_expected_rate_id, p_transaction_id, p_exchange_rate, p_to_amount, p_message)
+
+Transakce provede směnu mezi dvěma peněženkami uživatele.
+
+Jedná se o hlavní netriviální funkci formuláře, protože pracuje s více propojenými tabulkami. Při provedení směny se využívají tabulky `users`, `wallets`, `currencies`, `trading_pairs`, `exchange_rates`, `exchange_transactions` a `wallet_operations`.
+
+Procedura nejdříve ověří vstupní částku a upraví kódy měn do jednotného formátu. Poté vyhledá zdrojovou i cílovou peněženku uživatele a obě peněženky uzamkne pro změnu zůstatku. Tím se zabrání nekonzistentnímu stavu při současném provádění více transakcí.
+
+Dále se ověří, že směna probíhá mezi fiat měnou a kryptoměnou. Není tedy povolena směna fiat-fiat ani crypto-crypto. Následně se kontroluje, zda má zdrojová peněženka dostatečný zůstatek pro provedení směny.
+
+Poté procedura vyhledá odpovídající obchodní pár pomocí funkce `FindTradingPair`. Pokud obchodní pár existuje, zajistí se aktuálně platný směnný kurz pomocí funkce `EnsureValidExchangeRate`. Podle toho, zda byl obchodní pár nalezen v přímém nebo opačném směru, se výsledná částka vypočítá buď násobením, nebo dělením kurzem.
+
+Po úspěšném výpočtu se vytvoří záznam o směně v tabulce `exchange_transactions`. Následně se odečte směňovaná částka ze zdrojové peněženky a přičte se vypočítaná částka do cílové peněženky. Nakonec se do tabulky `wallet_operations` vloží dvě operace: jedna pro odchozí částku a druhá pro příchozí částku.
+
+Pokud celý proces proběhne bez chyby, transakce se potvrdí pomocí `COMMIT`. Pokud nastane jakákoliv chyba, všechny provedené změny se zruší pomocí `ROLLBACK`.
+
+**Vstupy**
+
+`p_user_id` – ID uživatele  
+`p_from_currency_code` – kód zdrojové měny  
+`p_to_currency_code` – kód cílové měny  
+`p_from_amount` – směňovaná částka  
+`p_expected_rate_id` – očekávané ID kurzu  
+
+**Výstupy**
+
+`p_transaction_id` – ID vytvořené směnné transakce  
+`p_exchange_rate` – použitý směnný kurz  
+`p_to_amount` – výsledná částka v cílové měně  
+`p_message` – stavová zpráva  
+
+**Výstupy transakce**
+
+ÚSPĚCH – vytvoření záznamu o směně, úprava zůstatků obou peněženek a vložení dvou peněženkových operací  
+
+NEÚSPĚCH – zrušení celé transakce pomocí rollbacku  
+
+**Chybové hlášky**
+
+`-20009` – Částka musí být větší než 0.  
+`-20010` – Směna musí být mezi fiat měnou a kryptoměnou.  
+`-20011` – Nedostatečný zůstatek.  
+`-20012` – Trading pair neexistuje.  
+`-20014` – Výsledná částka je mimo povolený rozsah.  
+

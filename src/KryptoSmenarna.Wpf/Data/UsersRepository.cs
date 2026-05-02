@@ -13,11 +13,11 @@ namespace KryptoSmenarna.Wpf.Data
         public List<User> GetAllUsers()
         {
             List<User> users = new List<User>();
-            OracleConnection connection = new OracleConnectionFactory().CreateConnection();
+            using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
             connection.Open();
 
             string querry = @"
-                    SELECT *
+                    SELECT user_id, email, hash_of_password, full_name
                     FROM users
                     ORDER BY full_name";
 

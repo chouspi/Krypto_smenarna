@@ -24,7 +24,7 @@ public class TransactionHistoryRepository
 
         using OracleCommand command = new OracleCommand(@"
             BEGIN
-                :p_result := GetWalletOperationsForDays(:p_user_id, :p_days);
+                :p_result := GetTransactionsForXDays(:p_user_id, :p_days);
             END;
         ", connection);
 
@@ -45,35 +45,34 @@ public class TransactionHistoryRepository
 
         while (reader.Read())
         {
+            string sourceType = ToText(reader["source_type"]);
+
+            if (sourceType == "EXCHANGE")
+            {
+                result.Add(new ExchangeTransactionHistoryItem
+                {
+                    FromCurrencyCode = ToText(reader["from_currency_code"]),
+                    ToCurrencyCode = ToText(reader["to_currency_code"]),
+                    FromAmount = ToDecimal(reader["from_amount"]),
+                    ToAmount = ToDecimal(reader["to_amount"]),
+                    ExchangeRate = ToDecimal(reader["exchange_rate"]),
+                    TransactionTime = ToDateTime(reader["event_time"]),
+                    TransactionStatus = ToText(reader["status"])
+                });
+
+                continue;
+            }
+
             result.Add(new WalletOperationHistoryItem
             {
-                OperationId = ToInt(reader["operation_id"]),
-                WalletId = ToInt(reader["wallet_id"]),
-                TransactionId = ToNullableInt(reader["transaction_id"]),
-                OperationType = reader["operation_type"].ToString() ?? "",
-                CurrencyCode = reader["currency_code"].ToString() ?? "",
-                Amount = ToDecimal(reader["amount"]),
-                OperationTime = ToDateTime(reader["operation_time"])
+                OperationType = sourceType,
+                CurrencyCode = ToText(reader["from_currency_code"]),
+                Amount = ToDecimal(reader["from_amount"]),
+                OperationTime = ToDateTime(reader["event_time"])
             });
         }
 
         return result;
-    }
-
-    private static int ToInt(object value)
-    {
-        if (value is OracleDecimal oracleDecimal)
-            return Convert.ToInt32(oracleDecimal.Value);
-
-        return Convert.ToInt32(value);
-    }
-
-    private static int? ToNullableInt(object value)
-    {
-        if (value == null || value == DBNull.Value)
-            return null;
-
-        return ToInt(value);
     }
 
     private static decimal ToDecimal(object value)
@@ -90,5 +89,28 @@ public class TransactionHistoryRepository
             return oracleTimeStamp.Value;
 
         return Convert.ToDateTime(value);
+    }
+
+    private static string ToText(object value)
+    {
+        if (value == null)
+            return "";
+
+        if (value == DBNull.Value)
+            return "";
+
+        if (value is OracleString oracleString)
+        {
+            if (oracleString.IsNull)
+                return "";
+
+            return oracleString.Value;
+        }
+
+        string? text = value.ToString();
+        if (text == null)
+            return "";
+
+        return text;
     }
 }

@@ -15,16 +15,37 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                <TextBlock Text="Transakční historie" FontSize="20" FontWeight="Bold" Foreground="#111827"/>
-                <TextBlock Text="Wallet operace za posledních 30 dní" FontSize="13" Foreground="#6B7280" Margin="0,4,0,0"/>
-            </StackPanel>
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Transakční historie" FontSize="20" FontWeight="Bold" Foreground="#111827"/>
+                    <TextBlock x:Name="TextBlockHistoryRange" Text="Transakce za posledních 30 dní" FontSize="13" Foreground="#6B7280" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <UniformGrid Grid.Column="1" Columns="4" VerticalAlignment="Top" Margin="16,0,0,0">
+                    <Button x:Name="ButtonHistoryDay" Content="D" Width="42" Height="30" Margin="0,0,6,0" Click="ButtonHistoryDay_Click"/>
+                    <Button x:Name="ButtonHistoryWeek" Content="7D" Width="42" Height="30" Margin="0,0,6,0" Click="ButtonHistoryWeek_Click"/>
+                    <Button x:Name="ButtonHistoryMonth" Content="1M" Width="42" Height="30" Margin="0,0,6,0" Click="ButtonHistoryMonth_Click"/>
+                    <Button x:Name="ButtonHistoryYear" Content="1R" Width="42" Height="30" Click="ButtonHistoryYear_Click"/>
+                </UniformGrid>
+            </Grid>
 
             <Grid Grid.Row="1">
-                <ListBox x:Name="ListBoxTransactionHistory" BorderThickness="0" Background="Transparent">
+                <ListBox x:Name="ListBoxTransactionHistory" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="0"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="0,10">
+                            <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="0,10" HorizontalAlignment="Stretch">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -45,7 +66,7 @@
                 </ListBox>
 
                 <TextBlock x:Name="TextBlockEmptyHistory"
-                           Text="Žádné wallet operace za vybrané období."
+                           Text="Žádné transakce za vybrané období."
                            FontSize="14"
                            Foreground="#6B7280"
                            HorizontalAlignment="Center"

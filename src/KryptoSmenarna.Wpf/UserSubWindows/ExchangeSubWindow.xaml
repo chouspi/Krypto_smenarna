@@ -4,14 +4,289 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
-    <Border Background="White" CornerRadius="12" Padding="24" Margin="10">
+
+    <UserControl.Resources>
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,0,0,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="MainBorder"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6"/>
+
+                            <Grid Margin="{TemplateBinding Padding}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="26"/>
+                                </Grid.ColumnDefinitions>
+
+                                <ContentPresenter Grid.Column="0"
+                                                  IsHitTestVisible="False"
+                                                  Content="{TemplateBinding SelectionBoxItem}"
+                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                  VerticalAlignment="Center"/>
+
+                                <Path Grid.Column="1"
+                                      Data="M 0 0 L 4 4 L 8 0"
+                                      Stroke="#9CA3AF"
+                                      StrokeThickness="2"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="Center"/>
+                            </Grid>
+
+                            <ToggleButton x:Name="ToggleButton"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                          Focusable="False">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="Transparent"/>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <Popup x:Name="Popup"
+                                   Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Slide">
+                                <Grid MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                      MinWidth="{TemplateBinding ActualWidth}">
+                                    <Border Background="White"
+                                            BorderBrush="#D1D5DB"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Margin="0,4,0,10">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.1"/>
+                                        </Border.Effect>
+
+                                        <ScrollViewer SnapsToDevicePixels="True" Margin="2">
+                                            <StackPanel IsItemsHost="True"
+                                                        KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="MainBorder" Property="BorderBrush" Value="#9CA3AF"/>
+                            </Trigger>
+
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="MainBorder" Property="BorderBrush" Value="#4F46E5"/>
+                                <Setter TargetName="MainBorder" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Focusable="False"
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#4F46E5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.45"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="White" CornerRadius="12" Padding="14" Margin="8">
         <Border.Effect>
             <DropShadowEffect BlurRadius="25" ShadowDepth="2" Opacity="0.06"/>
         </Border.Effect>
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Směna" FontSize="20" FontWeight="Bold" Foreground="#111827" Margin="0,0,0,12"/>
-            <TextBlock Text="Zatím není implementováno." FontSize="14" Foreground="#6B7280"/>
+        <StackPanel>
+            <TextBlock Text="Směna"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Foreground="#111827"
+                       Margin="0,0,0,10"/>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="MĚNOVÝ PÁR"
+                               FontSize="10"
+                               FontWeight="Bold"
+                               Foreground="#6B7280"
+                               Margin="0,0,0,5"/>
+
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="42"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ComboBox x:Name="ComboBoxFromCurrency"
+                                  Grid.Column="0"
+                                  Style="{StaticResource ModernComboBox}"
+                                  DisplayMemberPath="currencyCode"
+                                  SelectionChanged="ComboBoxCurrency_SelectionChanged"/>
+
+                        <Button Grid.Column="1"
+                                 Content="↔"
+                                 Style="{StaticResource ModernButton}"
+                                 Height="32"
+                                 Width="32"
+                                Background="#F9FAFB"
+                                Foreground="#374151"
+                                BorderBrush="#D1D5DB"
+                                BorderThickness="1"
+                                FontWeight="SemiBold"
+                                 Margin="5,0"
+                                 Click="ButtonSwapCurrencies_Click"/>
+
+                        <ComboBox x:Name="ComboBoxToCurrency"
+                                  Grid.Column="2"
+                                  Style="{StaticResource ModernComboBox}"
+                                  DisplayMemberPath="currencyCode"
+                                  SelectionChanged="ComboBoxCurrency_SelectionChanged"/>
+                    </Grid>
+
+                    <TextBlock Text="ČÁSTKA"
+                               FontSize="10"
+                               FontWeight="Bold"
+                               Foreground="#6B7280"
+                               Margin="0,0,0,5"/>
+
+                    <TextBox x:Name="TextBoxFromAmount"
+                              Style="{StaticResource ModernTextBox}"
+                              Text="0"
+                              TextChanged="TextBoxFromAmount_TextChanged"
+                              Margin="0,0,0,5" Height="37"/>
+
+                    <TextBlock x:Name="TextBlockFromBalance"
+                               Text=""
+                               FontSize="11"
+                               Foreground="#6B7280"
+                               Margin="0,0,0,0"/>
+                </StackPanel>
+
+                <Border Grid.Column="2"
+                        Background="#F9FAFB"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12">
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Nabídka"
+                                   Grid.Row="0"
+                                   FontSize="13"
+                                   FontWeight="Bold"
+                                   Foreground="#111827"
+                                   Margin="0,0,0,5"/>
+
+                        <TextBlock x:Name="TextBlockQuoteResult"
+                                   Grid.Row="1"
+                                   Text="Zadejte částku pro směnu."
+                                   FontSize="13"
+                                   Foreground="#374151"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,5"/>
+
+                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" MaxHeight="62" Margin="0,0,0,8">
+                            <TextBlock x:Name="TextBlockQuoteRate"
+                                       Text=""
+                                       FontSize="11"
+                                       Foreground="#6B7280"
+                                       TextWrapping="Wrap"/>
+                        </ScrollViewer>
+
+                        <Button x:Name="ButtonExecuteExchange"
+                                Grid.Row="3"
+                                Content="Potvrdit směnu"
+                                Style="{StaticResource ModernButton}"
+                                Height="34"
+                                Background="#059669"
+                                Foreground="White"
+                                FontWeight="SemiBold"
+                                IsEnabled="False"
+                                Click="ButtonExecuteExchange_Click"/>
+                    </Grid>
+                </Border>
+            </Grid>
         </StackPanel>
     </Border>
 </UserControl>

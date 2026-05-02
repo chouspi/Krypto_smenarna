@@ -18,6 +18,21 @@ namespace KryptoSmenarna.Wpf
             WalletOperations.Initialize(currentUser);
             TransactionHistory.Initialize(currentUser);
             Exchange.Initialize(currentUser);
+
+            WalletOperations.WalletOperationCompleted += WalletOperations_WalletOperationCompleted;
+            Exchange.ExchangeCompleted += Exchange_ExchangeCompleted;
+        }
+
+        private void WalletOperations_WalletOperationCompleted(object? sender, System.EventArgs e)
+        {
+            TransactionHistory.Refresh();
+            Exchange.Refresh();
+        }
+
+        private void Exchange_ExchangeCompleted(object? sender, System.EventArgs e)
+        {
+            WalletOperations.Refresh();
+            TransactionHistory.Refresh();
         }
     }
 }

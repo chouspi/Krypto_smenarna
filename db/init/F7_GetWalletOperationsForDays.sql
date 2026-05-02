@@ -6,14 +6,6 @@ RETURN SYS_REFCURSOR
 IS
     v_result SYS_REFCURSOR;
 BEGIN
-    IF p_user_id <= 0 THEN
-        RAISE_APPLICATION_ERROR(-20006, 'ID uživatele musí být větší než 0.');
-    END IF;
-
-    IF p_days <= 0 THEN
-        RAISE_APPLICATION_ERROR(-20007, 'Počet dní musí být větší než 0.');
-    END IF;
-
     OPEN v_result FOR
         SELECT
             o.operation_id,
