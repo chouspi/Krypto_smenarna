@@ -27,7 +27,7 @@ Start the project setup from the repository root:
 .\setup.ps1
 ```
 
-The script creates `.env` from `.env.example` if needed and starts Oracle with Docker Compose.
+The script creates `.env` from `.env.example` if needed, starts Oracle with Docker Compose, waits until the database is ready, and runs all SQL scripts from `db/init`.
 
 Default database credentials from `.env.example`:
 
