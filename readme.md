@@ -1,38 +1,72 @@
 # Crypto Exchange
 
-A desktop WPF application that simulates a simple cryptocurrency exchange. The user selects an account, manages fiat and crypto wallets, and the application calculates the selected cryptocurrency value using the latest exchange rate from the Oracle database.
+## Abstrakt
 
-## Features
+Simulation of a simple cryptocurrency exchange as a desktop WPF application. The user selects an account, manages fiat and crypto wallets, deposits and withdraws funds, exchanges assets using the current database exchange rate, and reviews transaction history. Data is stored in an Oracle database started through Docker Compose, and key balance-changing operations are handled by database procedures.
 
-- user selection on application startup
-- fiat and crypto wallet overview
-- fiat and crypto deposits through Oracle stored procedure `DepositToWallet`
-- fiat and crypto withdrawals through Oracle stored procedure `WithdrawFromWallet`
-- input validation for wallet operations before calling the database
-- crypto value conversion to the selected fiat currency
-- exchange rates loaded from an Oracle database
-- automatic creation of a new simulated exchange rate after the previous one expires
-- dashboard split into three user subwindows: wallets, transaction history, and exchange
-- test data insert and delete actions through development buttons in the application
+## Used Technologies
 
-Transaction history and exchange forms are currently prepared in the UI as separate subwindows, but their full user workflows are not implemented yet.
+- C# and .NET 9
+- WPF for the desktop user interface
+- Oracle Database Free running in Docker
+- Oracle PL/SQL procedures and functions
+- `Oracle.ManagedDataAccess.Core` for database access
+- Docker Compose for local database startup
 
-## Requirements
+## How to Run
+
+Requirements:
 
 - Windows
 - .NET 9 SDK
 - Docker Desktop
-- Oracle database started through `compose.yaml`
 
-## Setup
-
-After cloning the repository, run:
+Start the project setup from the repository root:
 
 ```powershell
 .\setup.ps1
 ```
 
-The script creates `.env` from `.env.example` if it does not exist and starts Oracle through Docker Compose.
+The script creates `.env` from `.env.example` if needed and starts Oracle with Docker Compose.
+
+Default database credentials from `.env.example`:
+
+- application user: `APP`
+- application password: `AppTest123`
+- Oracle admin password: `OracleTest123`
+
+Restore and run the WPF application:
+
+```powershell
+dotnet restore Krypto_smenarna.sln
+dotnet run --project src/KryptoSmenarna.Wpf/KryptoSmenarna.Wpf.csproj
+```
+
+After the first database startup, use the `Vložit testovací data` button in the application to insert test users, wallets, currencies, and exchange rates.
+
+## Features
+
+The application starts with a simple user selection screen. In development mode, test data can also be inserted or deleted directly from this window.
+
+![User selection](docs/images/readme0.png)
+
+After selecting a user, the application displays a confirmation panel with basic account information before opening the dashboard.
+
+![Selected user confirmation](docs/images/readme1.png)
+
+The main dashboard combines wallet management, transaction history, and exchange operations in one screen.
+
+![Main dashboard](docs/images/readme3.png)
+
+Main supported features:
+
+- fiat and crypto wallet overview
+- fiat and crypto deposits through Oracle stored procedure `DepositToWallet`
+- fiat and crypto withdrawals through Oracle stored procedure `WithdrawFromWallet`
+- fiat-to-crypto and crypto-to-fiat exchange through Oracle stored procedure `ExecuteExchange`
+- automatic quote calculation when the amount or selected currencies change
+- transaction history with time range filters
+- exchange rates loaded from Oracle and refreshed automatically after expiration
 
 ## Configuration
 
@@ -71,22 +105,6 @@ docker compose up -d
 
 This deletes the local database data.
 
-## Running The Application
-
-Restore packages first:
-
-```powershell
-dotnet restore Krypto_smenarna.sln
-```
-
-Then run the WPF project:
-
-```powershell
-dotnet run --project src/KryptoSmenarna.Wpf/KryptoSmenarna.Wpf.csproj
-```
-
-After the first database startup, you may need to use the `Vlozit testovaci data` button in the application to insert users and wallets.
-
 ## Project Structure
 
 ```text
@@ -109,8 +127,8 @@ Krypto_smenarna/
 `UserWindow` is a dashboard shell. It hosts three WPF user controls from `UserSubWindows`:
 
 - `WalletOperationsSubWindow` contains the implemented fiat/crypto deposit and withdrawal form.
-- `TransactionHistorySubWindow` is prepared for transaction history.
-- `ExchangeSubWindow` is prepared for fiat-to-crypto exchange.
+- `TransactionHistorySubWindow` displays wallet operations and exchange transactions with time range filters.
+- `ExchangeSubWindow` handles fiat-to-crypto and crypto-to-fiat exchange with automatic quote calculation.
 
 The dashboard layout keeps wallets on the left side and places transaction history above exchange on the right side.
 
@@ -121,8 +139,12 @@ The dashboard layout keeps wallets on the left side and places transaction histo
 - `db/init/F2_DepositToWallet.sql` deposits funds into a wallet.
 - `db/init/F3_WithdrawFromWallet.sql` withdraws funds from a wallet.
 - `db/init/F4_FindTrafingPair.sql` finds a trading pair in both currency directions.
-- `db/init/GetLastExchangeRate.sql` returns the latest known exchange rate.
+- `db/init/F5_GetLastExchangeRate.sql` returns the latest known exchange rate.
 - `db/init/F6_GetTransactionFroXDays.sql` returns exchange transactions and wallet operations for a selected time range.
+- `db/init/F7_GetWalletOperationsForDays.sql` returns wallet operations for a selected time range.
+- `db/init/F8_EnsureValidExchangeRate.sql` returns a valid exchange rate or creates a new simulated one.
+- `db/init/F9_GetExchangeQuote.sql` calculates an exchange quote.
+- `db/init/F10_ExecuteExchange.sql` executes an exchange and writes linked wallet operations.
 - `db/test/insertRestValues.sql` inserts test users, currencies, wallets, and exchange rates.
 - `db/test/deleteAllData.sql` deletes test data.
 
