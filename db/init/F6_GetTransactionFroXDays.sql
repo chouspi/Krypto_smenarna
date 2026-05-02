@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION GetTransactionsForDays (
+CREATE OR REPLACE FUNCTION GetTransactionsForXDays (
     p_user_id IN users.user_id%TYPE,
     p_days    IN NUMBER
 )

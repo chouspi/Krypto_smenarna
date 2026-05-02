@@ -9,9 +9,49 @@
             <DropShadowEffect BlurRadius="25" ShadowDepth="2" Opacity="0.06"/>
         </Border.Effect>
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Transakční historie" FontSize="20" FontWeight="Bold" Foreground="#111827" Margin="0,0,0,12"/>
-            <TextBlock Text="Zatím není implementováno." FontSize="14" Foreground="#6B7280"/>
-        </StackPanel>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                <TextBlock Text="Transakční historie" FontSize="20" FontWeight="Bold" Foreground="#111827"/>
+                <TextBlock Text="Wallet operace za posledních 30 dní" FontSize="13" Foreground="#6B7280" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+                <ListBox x:Name="ListBoxTransactionHistory" BorderThickness="0" Background="Transparent">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding MainText}" FontSize="14" FontWeight="SemiBold" Foreground="#111827"/>
+                                        <TextBlock Text="{Binding DetailText}" FontSize="12" Foreground="#6B7280" Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding EventTime, StringFormat={}{0:dd.MM.yyyy HH:mm}}" FontSize="12" Foreground="#9CA3AF" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="12" FontWeight="SemiBold" Foreground="#059669" Margin="16,0,0,0" VerticalAlignment="Top"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <TextBlock x:Name="TextBlockEmptyHistory"
+                           Text="Žádné wallet operace za vybrané období."
+                           FontSize="14"
+                           Foreground="#6B7280"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="Collapsed"/>
+            </Grid>
+        </Grid>
     </Border>
 </UserControl>
