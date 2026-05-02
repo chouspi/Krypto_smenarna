@@ -6,17 +6,19 @@ CREATE OR REPLACE PROCEDURE WithdrawFromWallet (
 AS
     v_wallet_id wallets.wallet_id%TYPE;
     v_balance   wallets.balance%TYPE;
+    v_is_crypto currencies.is_crypto%TYPE;
 BEGIN
     IF p_amount <= 0 THEN
         RAISE_APPLICATION_ERROR(-20003, 'Částka výběru musí být větší než 0.');
     END IF;
 
-    SELECT wallet_id, balance
-    INTO v_wallet_id, v_balance
-    FROM wallets
-    WHERE user_id = p_user_id
-      AND currency_code = p_currency_code
-    FOR UPDATE;
+    SELECT w.wallet_id, w.balance, c.is_crypto
+    INTO v_wallet_id, v_balance, v_is_crypto
+    FROM wallets w
+    JOIN currencies c ON c.currency_code = w.currency_code
+    WHERE w.user_id = p_user_id
+      AND w.currency_code = p_currency_code
+    FOR UPDATE OF w.balance;
 
     IF v_balance < p_amount THEN
         RAISE_APPLICATION_ERROR(-20004, 'Nedostatečný zůstatek na peněžence.');
@@ -34,7 +36,10 @@ BEGIN
     )
     VALUES (
         v_wallet_id,
-        'WITHDRAWAL',
+        CASE
+            WHEN v_is_crypto = 1 THEN 'CRYPTO_WITHDRAWAL'
+            ELSE 'FIAT_WITHDRAWAL'
+        END,
         p_amount,
         SYSTIMESTAMP
     );

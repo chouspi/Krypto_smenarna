@@ -10,7 +10,7 @@ namespace KryptoSmenarna.Wpf.Data
 {
     internal class TradingPairsRepository
     {
-        // Procedura hledá pár i v opačném pořadí měn a vrací příznak isReversed.
+        // Procedura hledá pár i v opačném pořadí měn a vrací isReversed.
         public int? FindTradingPairId(string baseCurrencyCode, string quoteCurrencyCode, out bool isReversed)
         {
             using OracleConnection connection = new OracleConnectionFactory().CreateConnection();

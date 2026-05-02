@@ -5,17 +5,19 @@ CREATE OR REPLACE PROCEDURE DepositToWallet (
 )
 AS
     v_wallet_id wallets.wallet_id%TYPE;
+    v_is_crypto currencies.is_crypto%TYPE;
 BEGIN
     IF p_amount <= 0 THEN
         RAISE_APPLICATION_ERROR(-20001, 'Částka vkladu musí být větší než 0.');
     END IF;
 
-    SELECT wallet_id
-    INTO v_wallet_id
-    FROM wallets
-    WHERE user_id = p_user_id
-      AND currency_code = p_currency_code
-    FOR UPDATE;
+    SELECT w.wallet_id, c.is_crypto
+    INTO v_wallet_id, v_is_crypto
+    FROM wallets w
+    JOIN currencies c ON c.currency_code = w.currency_code
+    WHERE w.user_id = p_user_id
+      AND w.currency_code = p_currency_code
+    FOR UPDATE OF w.balance;
 
     UPDATE wallets
     SET balance = balance + p_amount
@@ -29,7 +31,10 @@ BEGIN
     )
     VALUES (
         v_wallet_id,
-        'DEPOSIT',
+        CASE
+            WHEN v_is_crypto = 1 THEN 'CRYPTO_DEPOSIT'
+            ELSE 'FIAT_DEPOSIT'
+        END,
         p_amount,
         SYSTIMESTAMP
     );
@@ -45,3 +50,4 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END;
+/

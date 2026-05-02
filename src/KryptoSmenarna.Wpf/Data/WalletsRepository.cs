@@ -12,6 +12,8 @@ namespace KryptoSmenarna.Wpf.Data
 {
     public class WalletsRepository
     {
+        private const decimal MaxWalletAmount = 9999999999.99999999m;
+
         public List<Wallet> GetAllWallets(int userId, bool isCrypto)
         {
             List<Wallet> result = new List<Wallet>();
@@ -45,7 +47,7 @@ namespace KryptoSmenarna.Wpf.Data
                 {
                     wallet_id = Convert.ToInt32(reader["wallet_id"]),
                     user_id = Convert.ToInt32(reader["user_id"]),
-                    currencyCode = reader["currency_code"].ToString(),
+                    currencyCode = reader["currency_code"].ToString() ?? "",
                     balance = Convert.ToDecimal(reader["balance"])
                 };
 
@@ -58,23 +60,29 @@ namespace KryptoSmenarna.Wpf.Data
         // Databázová procedura řeší validaci výběru; OracleException znamená neúspěch.
         public bool TryWithdraw(decimal amount, string currencyCode, int userId)
         {
+            if (amount <= 0 || decimal.Round(amount, 8) != amount || amount > MaxWalletAmount || string.IsNullOrWhiteSpace(currencyCode))
+                return false;
+
             try
             {
-                OracleConnection connection = new OracleConnectionFactory().CreateConnection();
+                using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
                 connection.Open();
 
-                OracleCommand command = new OracleCommand("WithdrawFromWallet", connection);
+                using OracleCommand command = new OracleCommand("WithdrawFromWallet", connection);
                 command.CommandType = CommandType.StoredProcedure;
                 command.BindByName = true;
 
                 command.Parameters.Add("p_user_id", OracleDbType.Int32).Value = userId;
                 command.Parameters.Add("p_currency_code", OracleDbType.Varchar2).Value = currencyCode;
-                command.Parameters.Add("p_amount", OracleDbType.Decimal).Value = amount;
+                OracleParameter amountParameter = command.Parameters.Add("p_amount", OracleDbType.Decimal);
+                amountParameter.Precision = 18;
+                amountParameter.Scale = 8;
+                amountParameter.Value = amount;
                 command.ExecuteNonQuery();
 
                 return true;
             }
-            catch (OracleException ex)
+            catch (OracleException)
             {
                 return false;
             }
@@ -82,18 +90,64 @@ namespace KryptoSmenarna.Wpf.Data
 
         public void Deposit(decimal amount, string currencyCode, int userId)
         {
-            OracleConnection connection = new OracleConnectionFactory().CreateConnection();
+            if (amount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(amount), "Částka vkladu musí být větší než 0.");
+
+            if (decimal.Round(amount, 8) != amount || amount > MaxWalletAmount)
+                throw new ArgumentOutOfRangeException(nameof(amount), "Částka vkladu neodpovídá formátu NUMBER(18,8).");
+
+            if (string.IsNullOrWhiteSpace(currencyCode))
+                throw new ArgumentException("Kód měny nesmí být prázdný.", nameof(currencyCode));
+
+            using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
             connection.Open();
 
-            OracleCommand command = new OracleCommand("DepositToWallet", connection);
+            using OracleCommand command = new OracleCommand("DepositToWallet", connection);
             command.CommandType = CommandType.StoredProcedure;
             command.BindByName = true;
 
             command.Parameters.Add("p_user_id", OracleDbType.Int32).Value = userId;
             command.Parameters.Add("p_currency_code", OracleDbType.Varchar2).Value = currencyCode;
-            command.Parameters.Add("p_amount", OracleDbType.Decimal).Value = amount;
+            OracleParameter amountParameter = command.Parameters.Add("p_amount", OracleDbType.Decimal);
+            amountParameter.Precision = 18;
+            amountParameter.Scale = 8;
+            amountParameter.Value = amount;
 
             command.ExecuteNonQuery();
+        }
+
+        public Wallet? GetWallet(int userId, string currencyCode)
+        {
+            using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
+            connection.Open();
+
+            using OracleCommand command = new OracleCommand(@"
+        SELECT
+            wallet_id,
+            user_id,
+            currency_code,
+            balance
+        FROM wallets
+        WHERE user_id = :user_id
+          AND currency_code = :currency_code
+    ", connection);
+
+            command.BindByName = true;
+            command.Parameters.Add("user_id", OracleDbType.Int32).Value = userId;
+            command.Parameters.Add("currency_code", OracleDbType.Varchar2).Value = currencyCode;
+
+            using OracleDataReader reader = command.ExecuteReader();
+
+            if (!reader.Read())
+                return null;
+
+            return new Wallet
+            {
+                wallet_id = Convert.ToInt32(reader["wallet_id"]),
+                user_id = Convert.ToInt32(reader["user_id"]),
+                currencyCode = reader["currency_code"].ToString() ?? "",
+                balance = Convert.ToDecimal(reader["balance"])
+            };
         }
 
         public decimal GetFiatBalance(int userId, string fiatCode)

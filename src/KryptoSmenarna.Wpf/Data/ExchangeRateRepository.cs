@@ -54,7 +54,6 @@ namespace KryptoSmenarna.Wpf.Data
             using OracleConnection connection = new OracleConnectionFactory().CreateConnection();
             connection.Open();
 
-            // Uzavření starého kurzu a vložení nového musí proběhnout v jedné transakci.
             using OracleTransaction transaction = connection.BeginTransaction();
 
             try
@@ -62,7 +61,6 @@ namespace KryptoSmenarna.Wpf.Data
                 int pairId;
                 decimal oldRate;
 
-                // FOR UPDATE zamkne původní kurz, ze kterého se počítá navazující hodnota.
                 using (OracleCommand selectCommand = new OracleCommand(@"
             SELECT pair_id, rate
             FROM exchange_rates
@@ -183,7 +181,6 @@ namespace KryptoSmenarna.Wpf.Data
             return min + (randomDecimal * (max - min));
         }
 
-        // Oracle output parametry mohou přijít jako Oracle typy nebo textová hodnota "null".
         private static bool IsNull(object value)
         {
             return value == null || value == DBNull.Value || value.ToString() == "null";
