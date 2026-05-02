@@ -46,11 +46,11 @@ After the first database startup, use the `Vložit testovací data` button in th
 
 ## Features
 
-The application starts with a simple user selection screen. In development mode, test data can also be inserted or deleted directly from this window.
+The application starts with a simple user selection screen. test data can also be inserted or deleted directly from this window.
 
 ![User selection](docs/images/readme0.png)
 
-After selecting a user, the application displays a confirmation panel with basic account information before opening the dashboard.
+After selecting a user by double clicking, the application displays a confirmation panel with basic account information before opening the dashboard.
 
 ![Selected user confirmation](docs/images/readme1.png)
 
@@ -115,9 +115,9 @@ Krypto_smenarna/
 |- docs/       notes and school project analysis
 |- src/
 |  `- KryptoSmenarna.Wpf/
-|     |- Data/             Oracle repositories and database access
-|     |- Models/           application data models
-|     `- UserSubWindows/   wallet, transaction history, and exchange UI sections
+|     |- Data/             database access and tools
+|     |- Models/           classes representing db tables
+|     `- UserSubWindows/   wallet, transaction history and exchange UI sections
 |- compose.yaml
 `- Krypto_smenarna.sln
 ```
@@ -147,15 +147,6 @@ The dashboard layout keeps wallets on the left side and places transaction histo
 - `db/init/F10_ExecuteExchange.sql` executes an exchange and writes linked wallet operations.
 - `db/test/insertRestValues.sql` inserts test users, currencies, wallets, and exchange rates.
 - `db/test/deleteAllData.sql` deletes test data.
-
-## Wallet Operations
-
-Wallet deposits and withdrawals are intentionally performed through database procedures instead of direct balance updates in the UI:
-
-- `WalletsRepository.Deposit(...)` calls `DepositToWallet`.
-- `WalletsRepository.TryWithdraw(...)` calls `WithdrawFromWallet`.
-
-The procedures update wallet balances and insert records into `wallet_operations`. The UI reloads the affected wallet from the database after a successful operation.
 
 ## Notes
 
