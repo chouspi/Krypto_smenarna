@@ -24,9 +24,19 @@ Transaction history and exchange forms are currently prepared in the UI as separ
 - Docker Desktop
 - Oracle database started through `compose.yaml`
 
+## Setup
+
+After cloning the repository, run:
+
+```powershell
+.\setup.ps1
+```
+
+The script creates `.env` from `.env.example` if it does not exist and starts Oracle through Docker Compose.
+
 ## Configuration
 
-The repository does not include `.env`, because it contains local database credentials. Create it from the provided example:
+The repository does not include `.env`, because it contains local database credentials. If you do not use `setup.ps1`, create it from the provided example:
 
 ```powershell
 Copy-Item .env.example .env
@@ -44,7 +54,7 @@ On startup, the application searches for `.env` from the application output dire
 
 ## Database Setup
 
-Start the database with Docker Compose:
+Start the database with Docker Compose manually:
 
 ```powershell
 docker compose up -d
