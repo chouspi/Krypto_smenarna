@@ -1,6 +1,6 @@
 # Crypto Exchange
 
-## Abstrakt
+
 
 Simulation of a simple cryptocurrency exchange as a desktop WPF application. The user selects an account, manages fiat and crypto wallets, deposits and withdraws funds, exchanges assets using the current database exchange rate, and reviews transaction history. Data is stored in an Oracle database started through Docker Compose, and key balance-changing operations are handled by database procedures.
 
